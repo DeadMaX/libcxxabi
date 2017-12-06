@@ -68,12 +68,12 @@ cxa_exception_from_exception_unwind_exception(_Unwind_Exception* unwind_exceptio
 
 // Round s up to next multiple of a.
 static inline
-size_t aligned_allocation_size(size_t s, size_t a) {
+size_t aligned_allocation_size(std::size_t s, std::size_t a) {
     return (s + a - 1) & ~(a - 1);
 }
 
 static inline
-size_t cxa_exception_size_from_exception_thrown_size(size_t size) {
+size_t cxa_exception_size_from_exception_thrown_size(std::size_t size) {
     return aligned_allocation_size(size + sizeof (__cxa_exception),
                                    alignof(__cxa_exception));
 }
@@ -143,16 +143,16 @@ static _LIBCXXABI_NORETURN void failed_throw(__cxa_exception* exception_header) 
 // the header to ensure the thrown object that follows the header is
 // sufficiently aligned. This happens if _Unwind_exception isn't double-word
 // aligned (on Darwin, for example).
-static size_t get_cxa_exception_offset() {
+static std::size_t get_cxa_exception_offset() {
   struct S {
   } __attribute__((aligned));
 
   // Compute the maximum alignment for the target machine.
-  constexpr size_t alignment = std::alignment_of<S>::value;
-  constexpr size_t excp_size = sizeof(__cxa_exception);
-  constexpr size_t aligned_size =
+  constexpr std::size_t alignment = std::alignment_of<S>::value;
+  constexpr std::size_t excp_size = sizeof(__cxa_exception);
+  constexpr std::size_t aligned_size =
       (excp_size + alignment - 1) / alignment * alignment;
-  constexpr size_t offset = aligned_size - excp_size;
+  constexpr std::size_t offset = aligned_size - excp_size;
   static_assert((offset == 0 ||
                  std::alignment_of<_Unwind_Exception>::value < alignment),
                 "offset is non-zero only if _Unwind_Exception isn't aligned");
@@ -166,12 +166,12 @@ extern "C" {
 //  object. Zero-fill the object. If memory can't be allocated, call
 //  std::terminate. Return a pointer to the memory to be used for the
 //  user's exception object.
-void *__cxa_allocate_exception(size_t thrown_size) throw() {
-    size_t actual_size = cxa_exception_size_from_exception_thrown_size(thrown_size);
+void *__cxa_allocate_exception(std::size_t thrown_size) throw() {
+    std::size_t actual_size = cxa_exception_size_from_exception_thrown_size(thrown_size);
 
     // Allocate extra space before the __cxa_exception header to ensure the
     // start of the thrown object is sufficiently aligned.
-    size_t header_offset = get_cxa_exception_offset();
+    std::size_t header_offset = get_cxa_exception_offset();
     char *raw_buffer =
         (char *)__aligned_malloc_with_fallback(header_offset + actual_size);
     if (NULL == raw_buffer)
@@ -186,7 +186,7 @@ void *__cxa_allocate_exception(size_t thrown_size) throw() {
 //  Free a __cxa_exception object allocated with __cxa_allocate_exception.
 void __cxa_free_exception(void *thrown_object) throw() {
     // Compute the size of the padding before the header.
-    size_t header_offset = get_cxa_exception_offset();
+    std::size_t header_offset = get_cxa_exception_offset();
     char *raw_buffer =
         ((char *)cxa_exception_from_thrown_object(thrown_object)) - header_offset;
     __aligned_free_with_fallback((void *)raw_buffer);
@@ -197,7 +197,7 @@ void __cxa_free_exception(void *thrown_object) throw() {
 //  return a pointer to it. (Really to the object, not past its' end).
 //  Otherwise, it will work like __cxa_allocate_exception.
 void * __cxa_allocate_dependent_exception () {
-    size_t actual_size = sizeof(__cxa_dependent_exception);
+    std::size_t actual_size = sizeof(__cxa_dependent_exception);
     void *ptr = __aligned_malloc_with_fallback(actual_size);
     if (NULL == ptr)
         std::terminate();
@@ -633,7 +633,7 @@ __cxa_decrement_exception_refcount(void *thrown_object) throw() {
     if (thrown_object != NULL )
     {
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
-        if (__sync_sub_and_fetch(&exception_header->referenceCount, size_t(1)) == 0)
+        if (__sync_sub_and_fetch(&exception_header->referenceCount, std::size_t(1)) == 0)
         {
             if (NULL != exception_header->exceptionDestructor)
                 exception_header->exceptionDestructor(thrown_object);

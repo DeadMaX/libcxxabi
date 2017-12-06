@@ -20,9 +20,9 @@
 
 namespace __cxxabiv1 {
 
-static const uint64_t kOurExceptionClass          = 0x434C4E47432B2B00; // CLNGC++\0
-static const uint64_t kOurDependentExceptionClass = 0x434C4E47432B2B01; // CLNGC++\1
-static const uint64_t get_vendor_and_language     = 0xFFFFFFFFFFFFFF00; // mask for CLNGC++
+static const std::uint64_t kOurExceptionClass          = 0x434C4E47432B2B00; // CLNGC++\0
+static const std::uint64_t kOurDependentExceptionClass = 0x434C4E47432B2B01; // CLNGC++\1
+static const std::uint64_t get_vendor_and_language     = 0xFFFFFFFFFFFFFF00; // mask for CLNGC++
 
 struct _LIBCXXABI_HIDDEN __cxa_exception {
 #if defined(__LP64__) || defined(_LIBCXXABI_ARM_EHABI)
@@ -30,7 +30,7 @@ struct _LIBCXXABI_HIDDEN __cxa_exception {
     // For binary compatibility it is at the start of this
     // struct which is prepended to the object thrown in
     // __cxa_allocate_exception.
-    size_t referenceCount;
+    std::size_t referenceCount;
 #endif
 
     //  Manage the exception object itself.
@@ -58,7 +58,7 @@ struct _LIBCXXABI_HIDDEN __cxa_exception {
     // This is a new field to support C++ 0x exception_ptr.
     // For binary compatibility it is placed where the compiler
     // previously adding padded to 64-bit align unwindHeader.
-    size_t referenceCount;
+    std::size_t referenceCount;
 #endif
     _Unwind_Exception unwindHeader;
 };

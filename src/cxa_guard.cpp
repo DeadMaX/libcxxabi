@@ -39,7 +39,7 @@ inline void set_initialized(guard_type* guard_object) {
     *guard_object |= 1;
 }
 #else
-typedef uint64_t guard_type;
+typedef std::uint64_t guard_type;
 
 void set_initialized(guard_type* guard_object) {
     char* initialized = (char*)guard_object;
@@ -78,30 +78,30 @@ typedef uint32_t lock_type;
 
 inline
 lock_type
-get_lock(uint64_t x)
+get_lock(std::uint64_t x)
 {
     return static_cast<lock_type>(x >> 32);
 }
 
 inline
 void
-set_lock(uint64_t& x, lock_type y)
+set_lock(std::uint64_t& x, lock_type y)
 {
-    x = static_cast<uint64_t>(y) << 32;
+    x = static_cast<std::uint64_t>(y) << 32;
 }
 
 #else  // __LITTLE_ENDIAN__
 
 inline
 lock_type
-get_lock(uint64_t x)
+get_lock(std::uint64_t x)
 {
     return static_cast<lock_type>(x);
 }
 
 inline
 void
-set_lock(uint64_t& x, lock_type y)
+set_lock(std::uint64_t& x, lock_type y)
 {
     x = y;
 }
@@ -113,23 +113,23 @@ set_lock(uint64_t& x, lock_type y)
 typedef bool lock_type;
 
 #if !defined(__arm__)
-static_assert(std::is_same<guard_type, uint64_t>::value, "");
+static_assert(std::is_same<guard_type, std::uint64_t>::value, "");
 
-inline lock_type get_lock(uint64_t x)
+inline lock_type get_lock(std::uint64_t x)
 {
     union
     {
-        uint64_t guard;
+        std::uint64_t guard;
         uint8_t lock[2];
     } f = {x};
     return f.lock[1] != 0;
 }
 
-inline void set_lock(uint64_t& x, lock_type y)
+inline void set_lock(std::uint64_t& x, lock_type y)
 {
     union
     {
-        uint64_t guard;
+        std::uint64_t guard;
         uint8_t lock[2];
     } f = {0};
     f.lock[1] = y;

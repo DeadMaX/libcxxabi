@@ -260,7 +260,7 @@ readEncodedPointer(const uint8_t** data, uint8_t encoding)
         result = readPointerHelper<uint32_t>(p);
         break;
     case DW_EH_PE_udata8:
-        result = readPointerHelper<uint64_t>(p);
+        result = readPointerHelper<std::uint64_t>(p);
         break;
     case DW_EH_PE_sdata2:
         result = readPointerHelper<int16_t>(p);
@@ -337,7 +337,7 @@ static const void* read_target2_value(const void* ptr)
 }
 
 static const __shim_type_info*
-get_shim_type_info(uint64_t ttypeIndex, const uint8_t* classInfo,
+get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
                    uint8_t ttypeEncoding, bool native_exception,
                    _Unwind_Exception* unwind_exception)
 {
@@ -360,7 +360,7 @@ get_shim_type_info(uint64_t ttypeIndex, const uint8_t* classInfo,
 #else // !defined(_LIBCXXABI_ARM_EHABI)
 static
 const __shim_type_info*
-get_shim_type_info(uint64_t ttypeIndex, const uint8_t* classInfo,
+get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
                    uint8_t ttypeEncoding, bool native_exception,
                    _Unwind_Exception* unwind_exception)
 {
@@ -469,7 +469,7 @@ exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
     //    adjustments to adjustedPtr are ignored.
     while (true)
     {
-        uint64_t ttypeIndex = readULEB128(&temp);
+        std::uint64_t ttypeIndex = readULEB128(&temp);
         if (ttypeIndex == 0)
             break;
         const __shim_type_info* catchType = get_shim_type_info(ttypeIndex,
@@ -706,7 +706,7 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
                     // Found a catch, does it actually catch?
                     // First check for catch (...)
                     const __shim_type_info* catchType =
-                        get_shim_type_info(static_cast<uint64_t>(ttypeIndex),
+                        get_shim_type_info(static_cast<std::uint64_t>(ttypeIndex),
                                            classInfo, ttypeEncoding,
                                            native_exception, unwind_exception);
                     if (catchType == 0)
@@ -940,7 +940,7 @@ __gxx_personality_sj0
 #else
 __gxx_personality_v0
 #endif
-                    (int version, _Unwind_Action actions, uint64_t exceptionClass,
+                    (int version, _Unwind_Action actions, std::uint64_t exceptionClass,
                      _Unwind_Exception* unwind_exception, _Unwind_Context* context)
 {
     if (version != 1 || unwind_exception == 0 || context == 0)

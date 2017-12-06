@@ -53,7 +53,7 @@ private:
 #endif
 };
 
-static const size_t HEAP_SIZE = 512;
+static const std::size_t HEAP_SIZE = 512;
 char heap[HEAP_SIZE] __attribute__((aligned));
 
 typedef unsigned short heap_offset;
@@ -74,7 +74,7 @@ heap_node* node_from_offset(const heap_offset offset) {
 
 heap_offset offset_from_node(const heap_node* ptr) {
   return static_cast<heap_offset>(
-      static_cast<size_t>(reinterpret_cast<const char*>(ptr) - heap) /
+      static_cast<std::size_t>(reinterpret_cast<const char*>(ptr) - heap) /
       sizeof(heap_node));
 }
 
@@ -85,7 +85,7 @@ void init_heap() {
 }
 
 //  How big a chunk we allocate
-size_t alloc_size(size_t len) {
+size_t alloc_size(std::size_t len) {
   return (len + sizeof(heap_node) - 1) / sizeof(heap_node) + 1;
 }
 
@@ -93,9 +93,9 @@ bool is_fallback_ptr(void* ptr) {
   return ptr >= heap && ptr < (heap + HEAP_SIZE);
 }
 
-void* fallback_malloc(size_t len) {
+void* fallback_malloc(std::size_t len) {
   heap_node *p, *prev;
-  const size_t nelems = alloc_size(len);
+  const std::size_t nelems = alloc_size(len);
   mutexor mtx(&heap_mutex);
 
   if (NULL == freelist)
@@ -202,7 +202,7 @@ namespace __cxxabiv1 {
 
 struct __attribute__((aligned)) __aligned_type {};
 
-void* __aligned_malloc_with_fallback(size_t size) {
+void* __aligned_malloc_with_fallback(std::size_t size) {
 #if defined(_WIN32)
   if (void* dest = _aligned_malloc(size, alignof(__aligned_type)))
     return dest;
@@ -219,7 +219,7 @@ void* __aligned_malloc_with_fallback(size_t size) {
   return fallback_malloc(size);
 }
 
-void* __calloc_with_fallback(size_t count, size_t size) {
+void* __calloc_with_fallback(std::size_t count, std::size_t size) {
   void* ptr = std::calloc(count, size);
   if (NULL != ptr)
     return ptr;

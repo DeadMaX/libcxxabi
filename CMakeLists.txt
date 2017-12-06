@@ -43,6 +43,7 @@ include(CMakeDependentOption)
 include(HandleCompilerRT)
 
 # Define options.
+option(LIBCXXABI_STANDFREE "Build a standfree version of libcxxabi" OFF)
 option(LIBCXXABI_ENABLE_EXCEPTIONS "Use exceptions." ON)
 option(LIBCXXABI_ENABLE_ASSERTIONS "Enable assertions independent of build mode." ON)
 option(LIBCXXABI_ENABLE_PEDANTIC "Compile with pedantic enabled." ON)
@@ -220,6 +221,14 @@ endif()
 
 # Configure compiler. Must happen after setting the target flags.
 include(config-ix)
+
+if (LIBCXXABI_STANDFREE)
+  add_definitions(-DLIBCXXABI_STANDFREE)
+  list(APPEND LIBCXXABI_COMPILE_FLAGS -nostdinc)
+  list(APPEND LIBCXXABI_LINK_FLAGS -nostdlib)
+# TODO: remove following line
+  list(APPEND LIBCXXABI_COMPILE_FLAGS -D__ELF__ -DLIBCXX_STANDFREE)
+endif (LIBCXXABI_STANDFREE)
 
 if (LIBCXXABI_HAS_NOSTDINCXX_FLAG)
   list(APPEND LIBCXXABI_COMPILE_FLAGS -nostdinc++)

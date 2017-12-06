@@ -52,12 +52,12 @@ class StringView {
   const char *Last;
 
 public:
-  template <size_t N>
+  template <std::size_t N>
   StringView(const char (&Str)[N]) : First(Str), Last(Str + N - 1) {}
   StringView(const char *First_, const char *Last_) : First(First_), Last(Last_) {}
   StringView() : First(nullptr), Last(nullptr) {}
 
-  StringView substr(size_t From, size_t To) {
+  StringView substr(std::size_t From, std::size_t To) {
     if (To >= size())
       To = size() - 1;
     if (From >= size())
@@ -65,7 +65,7 @@ public:
     return StringView(First + From, First + To);
   }
 
-  StringView dropFront(size_t N) const {
+  StringView dropFront(std::size_t N) const {
     if (N >= size())
       N = size() - 1;
     return StringView(First + N, Last);
@@ -77,11 +77,11 @@ public:
     return std::equal(Str.begin(), Str.end(), begin());
   }
 
-  const char &operator[](size_t Idx) const { return *(begin() + Idx); }
+  const char &operator[](std::size_t Idx) const { return *(begin() + Idx); }
 
   const char *begin() const { return First; }
   const char *end() const { return Last; }
-  size_t size() const { return static_cast<size_t>(Last - First); }
+  std::size_t size() const { return static_cast<std::size_t>(Last - First); }
 };
 
 bool operator==(const StringView &LHS, const StringView &RHS) {
@@ -93,11 +93,11 @@ bool operator==(const StringView &LHS, const StringView &RHS) {
 // has been parsed.
 class OutputStream {
   char *Buffer;
-  size_t CurrentPosition;
-  size_t BufferCapacity;
+  std::size_t CurrentPosition;
+  std::size_t BufferCapacity;
 
   // Ensure there is at least n more positions in buffer.
-  void grow(size_t N) {
+  void grow(std::size_t N) {
     if (N + CurrentPosition >= BufferCapacity) {
       BufferCapacity *= 2;
       if (BufferCapacity < N + CurrentPosition)
@@ -107,11 +107,11 @@ class OutputStream {
   }
 
 public:
-  OutputStream(char *StartBuf, size_t Size)
+  OutputStream(char *StartBuf, std::size_t Size)
       : Buffer(StartBuf), CurrentPosition(0), BufferCapacity(Size) {}
 
   OutputStream &operator+=(StringView R) {
-    size_t Size = R.size();
+    std::size_t Size = R.size();
     if (Size == 0)
       return *this;
     grow(Size);
@@ -145,7 +145,7 @@ public:
   };
 
   OutputStream &operator+=(StreamStringView &s) {
-    size_t Sz = static_cast<size_t>(s.Last - s.First);
+    std::size_t Sz = static_cast<std::size_t>(s.Last - s.First);
     if (Sz == 0)
       return *this;
     grow(Sz);
@@ -170,7 +170,7 @@ public:
 
   char *getBuffer() { return Buffer; }
   char *getBufferEnd() { return Buffer + CurrentPosition - 1; }
-  size_t getBufferCapacity() { return BufferCapacity; }
+  std::size_t getBufferCapacity() { return BufferCapacity; }
 };
 
 // Base class of all AST nodes. The AST is built by the parser, then is
@@ -255,18 +255,18 @@ public:
 
 class NodeArray {
   Node **Elements;
-  size_t NumElements;
+  std::size_t NumElements;
 
 public:
   NodeArray() : NumElements(0) {}
-  NodeArray(Node **Elements_, size_t NumElements_)
+  NodeArray(Node **Elements_, std::size_t NumElements_)
       : Elements(Elements_), NumElements(NumElements_) {}
 
   bool empty() const { return NumElements == 0; }
-  size_t size() const { return NumElements; }
+  std::size_t size() const { return NumElements; }
 
   void printWithSeperator(OutputStream &S, StringView Seperator) const {
-    for (size_t Idx = 0; Idx != NumElements; ++Idx) {
+    for (std::size_t Idx = 0; Idx != NumElements; ++Idx) {
       if (Idx)
         S += Seperator;
       Elements[Idx]->print(S);
@@ -1402,7 +1402,7 @@ public:
     const char *first = Contents.begin();
     const char *last = Contents.end() + 1;
 
-    const size_t N = FloatData<Float>::mangled_size;
+    const std::size_t N = FloatData<Float>::mangled_size;
     if (static_cast<std::size_t>(last - first) > N) {
       last = first + N;
       union {
@@ -1432,11 +1432,11 @@ public:
 class BumpPointerAllocator {
   struct BlockMeta {
     BlockMeta* Next;
-    size_t Current;
+    std::size_t Current;
   };
 
-  static constexpr size_t AllocSize = 4096;
-  static constexpr size_t UsableAllocSize = AllocSize - sizeof(BlockMeta);
+  static constexpr std::size_t AllocSize = 4096;
+  static constexpr std::size_t UsableAllocSize = AllocSize - sizeof(BlockMeta);
 
   alignas(16) char InitialBuffer[AllocSize];
   BlockMeta* BlockList = nullptr;
@@ -1446,7 +1446,7 @@ class BumpPointerAllocator {
     BlockList = new (NewMeta) BlockMeta{BlockList, 0};
   }
 
-  void* allocateMassive(size_t NBytes) {
+  void* allocateMassive(std::size_t NBytes) {
     NBytes += sizeof(BlockMeta);
     BlockMeta* NewMeta = reinterpret_cast<BlockMeta*>(new char[NBytes]);
     BlockList->Next = new (NewMeta) BlockMeta{BlockList->Next, 0};
@@ -1457,7 +1457,7 @@ public:
   BumpPointerAllocator()
       : BlockList(new (InitialBuffer) BlockMeta{nullptr, 0}) {}
 
-  void* allocate(size_t N) {
+  void* allocate(std::size_t N) {
     N = (N + 15u) & ~15u;
     if (N + BlockList->Current >= UsableAllocSize) {
       if (N > UsableAllocSize)
@@ -1479,7 +1479,7 @@ public:
   }
 };
 
-template <class T, size_t N>
+template <class T, std::size_t N>
 class PODSmallVector {
   static_assert(std::is_pod<T>::value,
                 "T is required to be a plain old data type");
@@ -1497,8 +1497,8 @@ class PODSmallVector {
     Cap = Inline + N;
   }
 
-  void reserve(size_t NewCap) {
-    size_t S = size();
+  void reserve(std::size_t NewCap) {
+    std::size_t S = size();
     if (isInline()) {
       auto* Tmp = static_cast<T*>(std::malloc(NewCap * sizeof(T)));
       std::copy(First, Last, Tmp);
@@ -1567,7 +1567,7 @@ public:
     --Last;
   }
 
-  void dropBack(size_t Index) {
+  void dropBack(std::size_t Index) {
     assert(Index <= size() && "dropBack() can't expand!");
     Last = First + Index;
   }
@@ -1576,12 +1576,12 @@ public:
   T* end() { return Last; }
 
   bool empty() const { return First == Last; }
-  size_t size() const { return static_cast<size_t>(Last - First); }
+  std::size_t size() const { return static_cast<std::size_t>(Last - First); }
   T& back() {
     assert(Last != First && "Calling back() on empty vector!");
     return *(Last - 1);
   }
-  T& operator[](size_t Index) {
+  T& operator[](std::size_t Index) {
     assert(Index < size() && "Invalid access!");
     return *(begin() + Index);
   }
@@ -1595,7 +1595,7 @@ public:
 
 // Substitution table. This type is used to track the substitutions that are
 // known by the parser.
-template <size_t Size>
+template <std::size_t Size>
 class SubstitutionTable {
   // Substitutions hold the actual entries in the table, and PackIndices tells
   // us which entries are members of which pack. For example, if the
@@ -1643,7 +1643,7 @@ public:
 
   // Retrieve the Nth substitution. This is represented as a range, as the
   // substitution could be referring to a parameter pack.
-  NodeRange nthSubstitution(size_t N) {
+  NodeRange nthSubstitution(std::size_t N) {
     assert(PackIndices[N] <= Substitutions.size());
     // The Nth parameter pack starts at offset PackIndices[N], and ends at
     // PackIndices[N + 1].
@@ -1658,7 +1658,7 @@ public:
     return NodeRange{Begin, End};
   }
 
-  size_t size() const { return PackIndices.size(); }
+  std::size_t size() const { return PackIndices.size(); }
   bool empty() const { return PackIndices.empty(); }
   void clear() {
     Substitutions.clear();
@@ -1700,14 +1700,14 @@ struct Db
 
     template <class It> NodeArray makeNodeArray(It begin, It end)
     {
-        size_t sz = static_cast<size_t>(end - begin);
+        std::size_t sz = static_cast<std::size_t>(end - begin);
         void* mem = ASTAllocator.allocate(sizeof(Node*) * sz);
         Node** data = new (mem) Node*[sz];
         std::copy(begin, end, data);
         return NodeArray(data, sz);
     }
 
-    NodeArray popTrailingNodeArray(size_t FromPosition)
+    NodeArray popTrailingNodeArray(std::size_t FromPosition)
     {
         assert(FromPosition <= Names.size());
         NodeArray res = makeNodeArray(
@@ -1760,8 +1760,8 @@ struct FloatData;
 template <>
 struct FloatData<float>
 {
-    static const size_t mangled_size = 8;
-    static const size_t max_demangled_size = 24;
+    static const std::size_t mangled_size = 8;
+    static const std::size_t max_demangled_size = 24;
     static constexpr const char* spec = "%af";
 };
 
@@ -1770,8 +1770,8 @@ constexpr const char* FloatData<float>::spec;
 template <>
 struct FloatData<double>
 {
-    static const size_t mangled_size = 16;
-    static const size_t max_demangled_size = 32;
+    static const std::size_t mangled_size = 16;
+    static const std::size_t max_demangled_size = 32;
     static constexpr const char* spec = "%a";
 };
 
@@ -1782,13 +1782,13 @@ struct FloatData<long double>
 {
 #if defined(__mips__) && defined(__mips_n64) || defined(__aarch64__) || \
     defined(__wasm__)
-    static const size_t mangled_size = 32;
+    static const std::size_t mangled_size = 32;
 #elif defined(__arm__) || defined(__mips__) || defined(__hexagon__)
-    static const size_t mangled_size = 16;
+    static const std::size_t mangled_size = 16;
 #else
-    static const size_t mangled_size = 20;  // May need to be adjusted to 16 or 24 on other platforms
+    static const std::size_t mangled_size = 20;  // May need to be adjusted to 16 or 24 on other platforms
 #endif
-    static const size_t max_demangled_size = 40;
+    static const std::size_t max_demangled_size = 40;
     static constexpr const char* spec = "%LaL";
 };
 
@@ -1798,7 +1798,7 @@ template <class Float>
 const char*
 parse_floating_number(const char* first, const char* last, Db& db)
 {
-    const size_t N = FloatData<Float>::mangled_size;
+    const std::size_t N = FloatData<Float>::mangled_size;
     if (static_cast<std::size_t>(last - first) <= N)
         return first;
     last = first + N;
@@ -1819,7 +1819,7 @@ parse_floating_number(const char* first, const char* last, Db& db)
 
 // <positive length number> ::= [0-9]*
 const char*
-parse_positive_integer(const char* first, const char* last, size_t* out)
+parse_positive_integer(const char* first, const char* last, std::size_t* out)
 {
     if (first != last)
     {
@@ -1827,10 +1827,10 @@ parse_positive_integer(const char* first, const char* last, size_t* out)
         if (isdigit(c) && first+1 != last)
         {
             const char* t = first+1;
-            size_t n = static_cast<size_t>(c - '0');
+            std::size_t n = static_cast<std::size_t>(c - '0');
             for (c = *t; isdigit(c); c = *t)
             {
-                n = n * 10 + static_cast<size_t>(c - '0');
+                n = n * 10 + static_cast<std::size_t>(c - '0');
                 if (++t == last)
                     return first;
             }
@@ -1849,11 +1849,11 @@ parse_abi_tag_seq(const char* first, const char* last, Db& db)
 {
     while (first != last && *first == 'B' && first+1 != last)
     {
-        size_t length;
+        std::size_t length;
         const char* t = parse_positive_integer(first+1, last, &length);
         if (t == first+1)
             return first;
-        if (static_cast<size_t>(last - t) < length || db.Names.empty())
+        if (static_cast<std::size_t>(last - t) < length || db.Names.empty())
             return first;
         db.Names.back() = db.make<AbiTagAttr>(
             db.Names.back(), StringView(t, t + length));
@@ -1868,11 +1868,11 @@ parse_source_name(const char* first, const char* last, Db& db)
 {
     if (first != last)
     {
-        size_t length;
+        std::size_t length;
         const char* t = parse_positive_integer(first, last, &length);
         if (t == first)
             return first;
-        if (static_cast<size_t>(last - t) >= length)
+        if (static_cast<std::size_t>(last - t) >= length)
         {
             StringView r(t, t + length);
             if (r.substr(0, 10) == "_GLOBAL__N")
@@ -1946,19 +1946,19 @@ parse_substitution(const char* first, const char* last, Db& db)
             default:
                 if (std::isdigit(first[1]) || std::isupper(first[1]))
                 {
-                    size_t sub = 0;
+                    std::size_t sub = 0;
                     const char* t = first+1;
                     if (std::isdigit(*t))
-                        sub = static_cast<size_t>(*t - '0');
+                        sub = static_cast<std::size_t>(*t - '0');
                     else
-                        sub = static_cast<size_t>(*t - 'A') + 10;
+                        sub = static_cast<std::size_t>(*t - 'A') + 10;
                     for (++t; t != last && (std::isdigit(*t) || std::isupper(*t)); ++t)
                     {
                         sub *= 36;
                         if (std::isdigit(*t))
-                            sub += static_cast<size_t>(*t - '0');
+                            sub += static_cast<std::size_t>(*t - '0');
                         else
-                            sub += static_cast<size_t>(*t - 'A') + 10;
+                            sub += static_cast<std::size_t>(*t - 'A') + 10;
                     }
                     if (t == last || *t != '_')
                         return first;
@@ -2211,11 +2211,11 @@ parse_template_param(const char* first, const char* last, Db& db)
             else if (isdigit(first[1]))
             {
                 const char* t = first+1;
-                size_t sub = static_cast<size_t>(*t - '0');
+                std::size_t sub = static_cast<std::size_t>(*t - '0');
                 for (++t; t != last && isdigit(*t); ++t)
                 {
                     sub *= 10;
-                    sub += static_cast<size_t>(*t - '0');
+                    sub += static_cast<std::size_t>(*t - '0');
                 }
                 if (t == last || *t != '_')
                     return first;
@@ -2410,9 +2410,9 @@ parse_sizeof_param_pack_expr(const char* first, const char* last, Db& db)
 {
     if (last - first >= 3 && first[0] == 's' && first[1] == 'Z' && first[2] == 'T')
     {
-        size_t k0 = db.Names.size();
+        std::size_t k0 = db.Names.size();
         const char* t = parse_template_param(first+2, last, db);
-        size_t k1 = db.Names.size();
+        std::size_t k1 = db.Names.size();
         if (t != first+2 && k0 <= k1)
         {
             Node* sizeof_expr = db.make<SizeofParamPackExpr>(
@@ -2599,9 +2599,9 @@ parse_unresolved_type(const char* first, const char* last, Db& db)
         {
         case 'T':
           {
-            size_t k0 = db.Names.size();
+            std::size_t k0 = db.Names.size();
             t = parse_template_param(first, last, db);
-            size_t k1 = db.Names.size();
+            std::size_t k1 = db.Names.size();
             if (t != first && k1 == k0 + 1)
             {
                 db.Subs.pushSubstitution(db.Names.back());
@@ -2954,7 +2954,7 @@ parse_call_expr(const char* first, const char* last, Db& db)
             return first;
         Node* callee = db.Names.back();
         db.Names.pop_back();
-        size_t args_begin = db.Names.size();
+        std::size_t args_begin = db.Names.size();
         while (*t != 'E')
         {
             const char* t1 = parse_expression(t, last, db);
@@ -2997,7 +2997,7 @@ parse_new_expr(const char* first, const char* last, Db& db)
             t += 2;
             if (t == last)
                 return first;
-            size_t first_expr_in_list = db.Names.size();
+            std::size_t first_expr_in_list = db.Names.size();
             NodeArray ExprList, init_list;
             while (*t != '_')
             {
@@ -3019,7 +3019,7 @@ parse_new_expr(const char* first, const char* last, Db& db)
             {
                 t += 2;
                 has_init = true;
-                size_t init_list_begin = db.Names.size();
+                std::size_t init_list_begin = db.Names.size();
                 while (*t != 'E')
                 {
                     t1 = parse_expression(t, last, db);
@@ -3054,12 +3054,12 @@ parse_conversion_expr(const char* first, const char* last, Db& db)
     {
         bool TryToParseTemplateArgs = db.TryToParseTemplateArgs;
         db.TryToParseTemplateArgs = false;
-        size_t type_begin = db.Names.size();
+        std::size_t type_begin = db.Names.size();
         const char* t = parse_type(first+2, last, db);
         db.TryToParseTemplateArgs = TryToParseTemplateArgs;
         if (t != first+2 && t != last)
         {
-            size_t expr_list_begin = db.Names.size();
+            std::size_t expr_list_begin = db.Names.size();
             if (*t != '_')
             {
                 const char* t1 = parse_expression(t, last, db);
@@ -3152,7 +3152,7 @@ parse_function_type(const char* first, const char* last, Db& db)
             {
                 Node* ret_type = db.Names.back();
                 db.Names.pop_back();
-                size_t params_begin = db.Names.size();
+                std::size_t params_begin = db.Names.size();
                 t = t1;
                 FunctionRefQual RefQuals = FrefQualNone;
                 while (true)
@@ -3185,9 +3185,9 @@ parse_function_type(const char* first, const char* last, Db& db)
                         ++t;
                         continue;
                     }
-                    size_t k0 = db.Names.size();
+                    std::size_t k0 = db.Names.size();
                     t1 = parse_type(t, last, db);
-                    size_t k1 = db.Names.size();
+                    std::size_t k1 = db.Names.size();
                     if (t1 == t || t1 == last || k1 < k0)
                         return first;
                     t = t1;
@@ -3339,7 +3339,7 @@ parse_vector_type(const char* first, const char* last, Db& db)
             if (t == last || *t != '_')
                 return first;
             const char* num = first + 2;
-            size_t sz = static_cast<size_t>(t - num);
+            std::size_t sz = static_cast<std::size_t>(t - num);
             if (++t != last)
             {
                 if (*t != 'p')
@@ -3441,15 +3441,15 @@ parse_type(const char* first, const char* last, Db& db)
                 if (t != first)
                 {
                     bool is_function = *t == 'F';
-                    size_t k0 = db.Names.size();
+                    std::size_t k0 = db.Names.size();
                     const char* t1 = parse_type(t, last, db);
-                    size_t k1 = db.Names.size();
+                    std::size_t k1 = db.Names.size();
                     if (t1 != t)
                     {
                         if (is_function)
                             db.Subs.popPack();
                         db.Subs.pushPack();
-                        for (size_t k = k0; k < k1; ++k)
+                        for (std::size_t k = k0; k < k1; ++k)
                         {
                             if (cv) {
                                 if (is_function)
@@ -3533,13 +3533,13 @@ parse_type(const char* first, const char* last, Db& db)
                         break;
                     case 'O':
                       {
-                        size_t k0 = db.Names.size();
+                        std::size_t k0 = db.Names.size();
                         t = parse_type(first+1, last, db);
-                        size_t k1 = db.Names.size();
+                        std::size_t k1 = db.Names.size();
                         if (t != first+1)
                         {
                             db.Subs.pushPack();
-                            for (size_t k = k0; k < k1; ++k)
+                            for (std::size_t k = k0; k < k1; ++k)
                             {
                                 db.Names[k] =
                                     db.make<RValueReferenceType>(db.Names[k]);
@@ -3551,13 +3551,13 @@ parse_type(const char* first, const char* last, Db& db)
                       }
                     case 'P':
                       {
-                        size_t k0 = db.Names.size();
+                        std::size_t k0 = db.Names.size();
                         t = parse_type(first+1, last, db);
-                        size_t k1 = db.Names.size();
+                        std::size_t k1 = db.Names.size();
                         if (t != first+1)
                         {
                             db.Subs.pushPack();
-                            for (size_t k = k0; k < k1; ++k)
+                            for (std::size_t k = k0; k < k1; ++k)
                             {
                                 db.Names[k] = db.make<PointerType>(db.Names[k]);
                                 db.Subs.pushSubstitutionIntoPack(db.Names[k]);
@@ -3568,13 +3568,13 @@ parse_type(const char* first, const char* last, Db& db)
                       }
                     case 'R':
                       {
-                        size_t k0 = db.Names.size();
+                        std::size_t k0 = db.Names.size();
                         t = parse_type(first+1, last, db);
-                        size_t k1 = db.Names.size();
+                        std::size_t k1 = db.Names.size();
                         if (t != first+1)
                         {
                             db.Subs.pushPack();
-                            for (size_t k = k0; k < k1; ++k)
+                            for (std::size_t k = k0; k < k1; ++k)
                             {
                                 db.Names[k] =
                                     db.make<LValueReferenceType>(db.Names[k]);
@@ -3586,13 +3586,13 @@ parse_type(const char* first, const char* last, Db& db)
                       }
                     case 'T':
                       {
-                        size_t k0 = db.Names.size();
+                        std::size_t k0 = db.Names.size();
                         t = parse_template_param(first, last, db);
-                        size_t k1 = db.Names.size();
+                        std::size_t k1 = db.Names.size();
                         if (t != first)
                         {
                             db.Subs.pushPack();
-                            for (size_t k = k0; k < k1; ++k)
+                            for (std::size_t k = k0; k < k1; ++k)
                                 db.Subs.pushSubstitutionIntoPack(db.Names[k]);
                             if (db.TryToParseTemplateArgs && k1 == k0+1)
                             {
@@ -3697,13 +3697,13 @@ parse_type(const char* first, const char* last, Db& db)
                             {
                             case 'p':
                               {
-                                size_t k0 = db.Names.size();
+                                std::size_t k0 = db.Names.size();
                                 t = parse_type(first+2, last, db);
-                                size_t k1 = db.Names.size();
+                                std::size_t k1 = db.Names.size();
                                 if (t != first+2)
                                 {
                                     db.Subs.pushPack();
-                                    for (size_t k = k0; k < k1; ++k)
+                                    for (std::size_t k = k0; k < k1; ++k)
                                         db.Subs.pushSubstitutionIntoPack(db.Names[k]);
                                     first = t;
                                     return first;
@@ -4443,7 +4443,7 @@ parse_unnamed_type_name(const char* first, const char* last, Db& db)
             break;
         case 'l':
           {
-            size_t begin_pos = db.Names.size();
+            std::size_t begin_pos = db.Names.size();
             const char* t0 = first+2;
             NodeArray lambda_params;
             if (first[2] == 'v')
@@ -5260,28 +5260,28 @@ parse_template_args(const char* first, const char* last, Db& db)
         if (db.TagTemplates)
             db.TemplateParams.clear();
         const char* t = first+1;
-        size_t begin_idx = db.Names.size();
+        std::size_t begin_idx = db.Names.size();
         while (*t != 'E')
         {
             if (db.TagTemplates)
             {
                 auto TmpParams = std::move(db.TemplateParams);
-                size_t k0 = db.Names.size();
+                std::size_t k0 = db.Names.size();
                 const char* t1 = parse_template_arg(t, last, db);
-                size_t k1 = db.Names.size();
+                std::size_t k1 = db.Names.size();
                 db.TemplateParams = std::move(TmpParams);
 
                 if (t1 == t || t1 == last || k0 > k1)
                     return first;
                 db.TemplateParams.pushPack();
-                for (size_t k = k0; k < k1; ++k)
+                for (std::size_t k = k0; k < k1; ++k)
                     db.TemplateParams.pushSubstitutionIntoPack(db.Names[k]);
                 t = t1;
                 continue;
             }
-            size_t k0 = db.Names.size();
+            std::size_t k0 = db.Names.size();
             const char* t1 = parse_template_arg(t, last, db);
-            size_t k1 = db.Names.size();
+            std::size_t k1 = db.Names.size();
             if (t1 == t || t1 == last || k0 > k1)
               return first;
             t = t1;
@@ -6018,7 +6018,7 @@ parse_encoding(const char* first, const char* last, Db& db)
                     }
                     else
                     {
-                        size_t params_begin = db.Names.size();
+                        std::size_t params_begin = db.Names.size();
                         while (true)
                         {
                             t2 = parse_type(t, last, db);
@@ -6168,7 +6168,7 @@ demangle(const char* first, const char* last, Db& db, int& status)
 }  // unnamed namespace
 
 extern "C" _LIBCXXABI_FUNC_VIS char *
-__cxa_demangle(const char *mangled_name, char *buf, size_t *n, int *status) {
+__cxa_demangle(const char *mangled_name, char *buf, std::size_t *n, int *status) {
     if (mangled_name == nullptr || (buf != nullptr && n == nullptr))
     {
         if (status)
@@ -6176,10 +6176,10 @@ __cxa_demangle(const char *mangled_name, char *buf, size_t *n, int *status) {
         return nullptr;
     }
 
-    size_t internal_size = buf != nullptr ? *n : 0;
+    std::size_t internal_size = buf != nullptr ? *n : 0;
     Db db;
     int internal_status = success;
-    size_t len = std::strlen(mangled_name);
+    std::size_t len = std::strlen(mangled_name);
     demangle(mangled_name, mangled_name + len, db,
              internal_status);
 

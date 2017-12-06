@@ -15,8 +15,8 @@
  *       http://www.codesourcery.com/cxx-abi/
  */
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 #include <__cxxabi_config.h>
 
@@ -40,7 +40,7 @@ extern "C"  {
 
 // 2.4.2 Allocating the Exception Object
 extern _LIBCXXABI_FUNC_VIS void *
-__cxa_allocate_exception(size_t thrown_size) throw();
+__cxa_allocate_exception(std::size_t thrown_size) throw();
 extern _LIBCXXABI_FUNC_VIS void
 __cxa_free_exception(void *thrown_exception) throw();
 
@@ -83,57 +83,57 @@ extern _LIBCXXABI_FUNC_VIS int __cxa_guard_acquire(uint32_t *);
 extern _LIBCXXABI_FUNC_VIS void __cxa_guard_release(uint32_t *);
 extern _LIBCXXABI_FUNC_VIS void __cxa_guard_abort(uint32_t *);
 #else
-extern _LIBCXXABI_FUNC_VIS int __cxa_guard_acquire(uint64_t *);
-extern _LIBCXXABI_FUNC_VIS void __cxa_guard_release(uint64_t *);
-extern _LIBCXXABI_FUNC_VIS void __cxa_guard_abort(uint64_t *);
+extern _LIBCXXABI_FUNC_VIS int __cxa_guard_acquire(std::uint64_t *);
+extern _LIBCXXABI_FUNC_VIS void __cxa_guard_release(std::uint64_t *);
+extern _LIBCXXABI_FUNC_VIS void __cxa_guard_abort(std::uint64_t *);
 #endif
 
 // 3.3.3 Array Construction and Destruction API
 extern _LIBCXXABI_FUNC_VIS void *
-__cxa_vec_new(size_t element_count, size_t element_size, size_t padding_size,
+__cxa_vec_new(std::size_t element_count, std::size_t element_size, std::size_t padding_size,
               void (*constructor)(void *), void (*destructor)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void *
-__cxa_vec_new2(size_t element_count, size_t element_size, size_t padding_size,
+__cxa_vec_new2(std::size_t element_count, std::size_t element_size, std::size_t padding_size,
                void (*constructor)(void *), void (*destructor)(void *),
-               void *(*alloc)(size_t), void (*dealloc)(void *));
+               void *(*alloc)(std::size_t), void (*dealloc)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void *
-__cxa_vec_new3(size_t element_count, size_t element_size, size_t padding_size,
+__cxa_vec_new3(std::size_t element_count, std::size_t element_size, std::size_t padding_size,
                void (*constructor)(void *), void (*destructor)(void *),
-               void *(*alloc)(size_t), void (*dealloc)(void *, size_t));
+               void *(*alloc)(std::size_t), void (*dealloc)(void *, std::size_t));
 
 extern _LIBCXXABI_FUNC_VIS void
-__cxa_vec_ctor(void *array_address, size_t element_count, size_t element_size,
+__cxa_vec_ctor(void *array_address, std::size_t element_count, std::size_t element_size,
                void (*constructor)(void *), void (*destructor)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void __cxa_vec_dtor(void *array_address,
-                                               size_t element_count,
-                                               size_t element_size,
+                                               std::size_t element_count,
+                                               std::size_t element_size,
                                                void (*destructor)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void __cxa_vec_cleanup(void *array_address,
-                                                  size_t element_count,
-                                                  size_t element_size,
+                                                  std::size_t element_count,
+                                                  std::size_t element_size,
                                                   void (*destructor)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void __cxa_vec_delete(void *array_address,
-                                                 size_t element_size,
-                                                 size_t padding_size,
+                                                 std::size_t element_size,
+                                                 std::size_t padding_size,
                                                  void (*destructor)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void
-__cxa_vec_delete2(void *array_address, size_t element_size, size_t padding_size,
+__cxa_vec_delete2(void *array_address, std::size_t element_size, std::size_t padding_size,
                   void (*destructor)(void *), void (*dealloc)(void *));
 
 extern _LIBCXXABI_FUNC_VIS void
-__cxa_vec_delete3(void *__array_address, size_t element_size,
-                  size_t padding_size, void (*destructor)(void *),
-                  void (*dealloc)(void *, size_t));
+__cxa_vec_delete3(void *__array_address, std::size_t element_size,
+                  std::size_t padding_size, void (*destructor)(void *),
+                  void (*dealloc)(void *, std::size_t));
 
 extern _LIBCXXABI_FUNC_VIS void
-__cxa_vec_cctor(void *dest_array, void *src_array, size_t element_count,
-                size_t element_size, void (*constructor)(void *, void *),
+__cxa_vec_cctor(void *dest_array, void *src_array, std::size_t element_count,
+                std::size_t element_size, void (*constructor)(void *, void *),
                 void (*destructor)(void *));
 
 // 3.3.5.3 Runtime API
@@ -144,7 +144,7 @@ extern _LIBCXXABI_FUNC_VIS int __cxa_finalize(void *);
 // 3.4 Demangler API
 extern _LIBCXXABI_FUNC_VIS char *__cxa_demangle(const char *mangled_name,
                                                 char *output_buffer,
-                                                size_t *length, int *status);
+                                                std::size_t *length, int *status);
 
 // Apple additions to support C++ 0x exception_ptr class
 // These are primitives to wrap a smart pointer around an exception object

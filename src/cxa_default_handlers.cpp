@@ -49,7 +49,7 @@ static void demangling_terminate_handler()
                 // Try to get demangled name of thrown_type
                 int status;
                 char buf[1024];
-                size_t len = sizeof(buf);
+                std::size_t len = sizeof(buf);
                 const char* name = __cxa_demangle(thrown_type->name(), buf, &len, &status);
                 if (status != 0)
                     name = thrown_type->name();
