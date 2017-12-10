@@ -21,7 +21,11 @@
 #include <__cxxabi_config.h>
 
 #define _LIBCPPABI_VERSION 1002
+#ifdef _WIN32
+#define _LIBCXXABI_NORETURN  __declspec(noreturn)
+#else
 #define _LIBCXXABI_NORETURN  __attribute__((noreturn))
+#endif
 
 #ifdef __cplusplus
 

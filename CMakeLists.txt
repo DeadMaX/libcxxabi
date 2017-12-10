@@ -224,7 +224,11 @@ include(config-ix)
 
 if (LIBCXXABI_STANDFREE)
   add_definitions(-DLIBCXXABI_STANDFREE)
-  list(APPEND LIBCXXABI_COMPILE_FLAGS -nostdinc)
+  if (WIN32)
+	list(APPEND LIBCXXABI_COMPILE_FLAGS /X)
+  else (WIN32)
+	list(APPEND LIBCXXABI_COMPILE_FLAGS -nostdinc)
+  endif (WIN32)
   list(APPEND LIBCXXABI_LINK_FLAGS -nostdlib)
 # TODO: remove following line
   list(APPEND LIBCXXABI_COMPILE_FLAGS -D__ELF__ -DLIBCXX_STANDFREE)

@@ -15,30 +15,45 @@
 #include <typeinfo>
 
 namespace __cxxabiv1 {
+	_LIBCXXABI_NORETURN _LIBCXXABI_HIDDEN static inline void __thow_bad_cast()
+	{
+#ifndef _LIBCXXABI_NO_EXCEPTIONS
+		throw std::bad_cast();
+#else
+		std::terminate();
+#endif
+	}
+
+	_LIBCXXABI_NORETURN _LIBCXXABI_HIDDEN static inline void __thow_bad_typeid()
+	{
+#ifndef _LIBCXXABI_NO_EXCEPTIONS
+		throw std::bad_typeid();
+#else
+		std::terminate();
+#endif
+	}
+
+	_LIBCXXABI_NORETURN _LIBCXXABI_HIDDEN static inline void __thow_bad_array_new_length()
+	{
+#ifndef _LIBCXXABI_NO_EXCEPTIONS
+		throw std::bad_array_new_length();
+#else
+		std::terminate();
+#endif
+		}
+
 extern "C" {
 _LIBCXXABI_FUNC_VIS _LIBCXXABI_NORETURN void __cxa_bad_cast(void) {
-#ifndef _LIBCXXABI_NO_EXCEPTIONS
-  throw std::bad_cast();
-#else
-  std::terminate();
-#endif
+	__thow_bad_cast();
 }
 
 _LIBCXXABI_FUNC_VIS _LIBCXXABI_NORETURN void __cxa_bad_typeid(void) {
-#ifndef _LIBCXXABI_NO_EXCEPTIONS
-  throw std::bad_typeid();
-#else
-  std::terminate();
-#endif
+	__thow_bad_typeid();
 }
 
 _LIBCXXABI_FUNC_VIS _LIBCXXABI_NORETURN void
 __cxa_throw_bad_array_new_length(void) {
-#ifndef _LIBCXXABI_NO_EXCEPTIONS
-  throw std::bad_array_new_length();
-#else
-  std::terminate();
-#endif
+	__thow_bad_array_new_length();
 }
 } // extern "C"
 } // abi
