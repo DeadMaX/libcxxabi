@@ -147,7 +147,7 @@ __cxa_vec_new2(std::size_t element_count, std::size_t element_size, std::size_t 
     char * const heap_block = static_cast<char *> ( alloc ( heap_size ));
     char *vec_base = heap_block;
     
-    if ( NULL != vec_base ) {
+    if (nullptr != vec_base ) {
         st_heap_block2 heap ( dealloc, heap_block );
 
     //  put the padding before the array elements
@@ -175,7 +175,7 @@ __cxa_vec_new3(std::size_t element_count, std::size_t element_size, std::size_t 
     char * const heap_block = static_cast<char *> ( alloc ( heap_size ));
     char *vec_base = heap_block;
     
-    if ( NULL != vec_base ) {
+    if ( nullptr != vec_base ) {
         st_heap_block3 heap ( dealloc, heap_block, heap_size );
 
     //  put the padding before the array elements
@@ -208,7 +208,7 @@ _LIBCXXABI_FUNC_VIS void __cxa_vec_cctor(void *dest_array, void *src_array,
                                          std::size_t element_size,
                                          void (*constructor)(void *, void *),
                                          void (*destructor)(void *)) {
-    if ( NULL != constructor ) {
+    if ( nullptr != constructor ) {
         std::size_t idx = 0;
         char *src_ptr  = static_cast<char *>(src_array);
         char *dest_ptr = static_cast<char *>(dest_array);
@@ -232,7 +232,7 @@ _LIBCXXABI_FUNC_VIS void __cxa_vec_cctor(void *dest_array, void *src_array,
 _LIBCXXABI_FUNC_VIS void
 __cxa_vec_ctor(void *array_address, std::size_t element_count, std::size_t element_size,
                void (*constructor)(void *), void (*destructor)(void *)) {
-    if ( NULL != constructor ) {
+    if (nullptr != constructor ) {
         std::size_t idx;
         char *ptr = static_cast <char *> ( array_address );
         st_cxa_cleanup cleanup ( array_address, idx, element_size, destructor );        
@@ -254,7 +254,7 @@ _LIBCXXABI_FUNC_VIS void __cxa_vec_dtor(void *array_address,
                                         std::size_t element_count,
                                         std::size_t element_size,
                                         void (*destructor)(void *)) {
-    if ( NULL != destructor ) {
+    if (nullptr != destructor ) {
         char *ptr = static_cast <char *> (array_address);
         std::size_t idx = element_count;
         st_cxa_cleanup cleanup ( array_address, idx, element_size, destructor );        
@@ -280,7 +280,7 @@ _LIBCXXABI_FUNC_VIS void __cxa_vec_cleanup(void *array_address,
                                            std::size_t element_count,
                                            std::size_t element_size,
                                            void (*destructor)(void *)) {
-    if ( NULL != destructor ) {
+    if (nullptr != destructor ) {
         char *ptr = static_cast <char *> (array_address);
         std::size_t idx = element_count;
         st_terminate exception_guard;
@@ -329,12 +329,12 @@ _LIBCXXABI_FUNC_VIS void __cxa_vec_delete(void *array_address,
 _LIBCXXABI_FUNC_VIS void
 __cxa_vec_delete2(void *array_address, std::size_t element_size, std::size_t padding_size,
                   void (*destructor)(void *), void (*dealloc)(void *)) {
-    if ( NULL != array_address ) {
+    if (nullptr != array_address ) {
         char *vec_base   = static_cast <char *> (array_address);
         char *heap_block = vec_base - padding_size;
         st_heap_block2 heap ( dealloc, heap_block );
         
-        if ( 0 != padding_size && NULL != destructor ) // call the destructors
+        if ( 0 != padding_size && nullptr != destructor ) // call the destructors
             __cxa_vec_dtor ( array_address, __get_element_count ( vec_base ), 
                                     element_size, destructor );
     }
@@ -349,14 +349,14 @@ __cxa_vec_delete2(void *array_address, std::size_t element_size, std::size_t pad
 _LIBCXXABI_FUNC_VIS void
 __cxa_vec_delete3(void *array_address, std::size_t element_size, std::size_t padding_size,
                   void (*destructor)(void *), void (*dealloc)(void *, std::size_t)) {
-    if ( NULL != array_address ) {
+    if (nullptr != array_address ) {
         char *vec_base   = static_cast <char *> (array_address);
         char *heap_block = vec_base - padding_size;
         const std::size_t element_count = padding_size ? __get_element_count ( vec_base ) : 0;
         const std::size_t heap_block_size = element_size * element_count + padding_size;
         st_heap_block3 heap ( dealloc, heap_block, heap_block_size );
 
-        if ( 0 != padding_size && NULL != destructor ) // call the destructors
+        if ( 0 != padding_size && nullptr != destructor ) // call the destructors
             __cxa_vec_dtor ( array_address, element_count, element_size, destructor );
     }
 }

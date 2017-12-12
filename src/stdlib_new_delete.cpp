@@ -30,7 +30,7 @@ operator new(std::size_t size) _THROW_BAD_ALLOC
     if (size == 0)
         size = 1;
     void* p;
-    while ((p = ::malloc(size)) == 0)
+    while ((p = _LIBCPP_CNAMESPACE::malloc(size)) == 0)
     {
         // If malloc fails and there is a new_handler,
         // call it to try free up memory.
@@ -97,7 +97,7 @@ void
 operator delete(void* ptr) _NOEXCEPT
 {
     if (ptr)
-        ::free(ptr);
+		_LIBCPP_CNAMESPACE::free(ptr);
 }
 
 _LIBCXXABI_WEAK

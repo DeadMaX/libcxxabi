@@ -64,7 +64,7 @@ is_equal(const std::type_info* x, const std::type_info* y, bool use_strcmp)
         return x == y;
     return strcmp(x->name(), y->name()) == 0;
 #else
-    return (x == y) || (strcmp(x->name(), y->name()) == 0);
+    return (x == y) || (_LIBCPP_CNAMESPACE::strcmp(x->name(), y->name()) == 0);
 #endif
 }
 
@@ -297,14 +297,14 @@ __base_class_type_info::has_unambiguous_public_base(__dynamic_cast_info* info,
                                                     void* adjustedPtr,
                                                     int path_below) const
 {
-    ptrdiff_t offset_to_base = 0;
+    std::ptrdiff_t offset_to_base = 0;
     if (adjustedPtr != nullptr)
     {
         offset_to_base = __offset_flags >> __offset_shift;
         if (__offset_flags & __virtual_mask)
         {
             const char* vtable = *static_cast<const char*const*>(adjustedPtr);
-            offset_to_base = *reinterpret_cast<const ptrdiff_t*>(vtable + offset_to_base);
+            offset_to_base = *reinterpret_cast<const std::ptrdiff_t*>(vtable + offset_to_base);
         }
     }
     __base_type->has_unambiguous_public_base(
@@ -375,7 +375,7 @@ __pointer_type_info::can_catch(const __shim_type_info* thrown_type,
 
     // bullet 1
     if (__pbase_type_info::can_catch(thrown_type, adjustedPtr)) {
-        if (adjustedPtr != NULL)
+        if (adjustedPtr != nullptr)
             adjustedPtr = *static_cast<void**>(adjustedPtr);
         return true;
     }
@@ -385,7 +385,7 @@ __pointer_type_info::can_catch(const __shim_type_info* thrown_type,
     if (thrown_pointer_type == 0)
         return false;
     // Do the dereference adjustment
-    if (adjustedPtr != NULL)
+    if (adjustedPtr != nullptr)
         adjustedPtr = *static_cast<void**>(adjustedPtr);
     // bullet 3B and 3C
     if (thrown_pointer_type->__flags & ~__flags & __no_remove_flags_mask)
@@ -432,7 +432,7 @@ __pointer_type_info::can_catch(const __shim_type_info* thrown_type,
     thrown_class_type->has_unambiguous_public_base(&info, adjustedPtr, public_path);
     if (info.path_dst_ptr_to_static_ptr == public_path)
     {
-        if (adjustedPtr != NULL)
+        if (adjustedPtr != nullptr)
             adjustedPtr = const_cast<void*>(info.dst_ptr_leading_to_static_ptr);
         return true;
     }
@@ -624,7 +624,7 @@ __dynamic_cast(const void *static_ptr, const __class_type_info *static_type,
 
     // Get (dynamic_ptr, dynamic_type) from static_ptr
     void **vtable = *static_cast<void ** const *>(static_ptr);
-    ptrdiff_t offset_to_derived = reinterpret_cast<ptrdiff_t>(vtable[-2]);
+    std::ptrdiff_t offset_to_derived = reinterpret_cast<std::ptrdiff_t>(vtable[-2]);
     const void* dynamic_ptr = static_cast<const char*>(static_ptr) + offset_to_derived;
     const __class_type_info* dynamic_type = static_cast<const __class_type_info*>(vtable[-1]);
 
@@ -1257,11 +1257,11 @@ __base_class_type_info::search_above_dst(__dynamic_cast_info* info,
                                          int path_below,
                                          bool use_strcmp) const
 {
-    ptrdiff_t offset_to_base = __offset_flags >> __offset_shift;
+    std::ptrdiff_t offset_to_base = __offset_flags >> __offset_shift;
     if (__offset_flags & __virtual_mask)
     {
         const char* vtable = *static_cast<const char*const*>(current_ptr);
-        offset_to_base = *reinterpret_cast<const ptrdiff_t*>(vtable + offset_to_base);
+        offset_to_base = *reinterpret_cast<const std::ptrdiff_t*>(vtable + offset_to_base);
     }
     __base_type->search_above_dst(info, dst_ptr,
                                   static_cast<const char*>(current_ptr) + offset_to_base,
@@ -1277,11 +1277,11 @@ __base_class_type_info::search_below_dst(__dynamic_cast_info* info,
                                          int path_below,
                                          bool use_strcmp) const
 {
-    ptrdiff_t offset_to_base = __offset_flags >> __offset_shift;
+    std::ptrdiff_t offset_to_base = __offset_flags >> __offset_shift;
     if (__offset_flags & __virtual_mask)
     {
         const char* vtable = *static_cast<const char*const*>(current_ptr);
-        offset_to_base = *reinterpret_cast<const ptrdiff_t*>(vtable + offset_to_base);
+        offset_to_base = *reinterpret_cast<const std::ptrdiff_t*>(vtable + offset_to_base);
     }
     __base_type->search_below_dst(info,
                                   static_cast<const char*>(current_ptr) + offset_to_base,
