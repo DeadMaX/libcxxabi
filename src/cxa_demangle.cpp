@@ -24,13 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
-
-#ifdef _MSC_VER
-// snprintf is implemented in VS 2015
-#if _MSC_VER < 1900
-#define snprintf _snprintf_s
-#endif
-#endif
+#include <ios>
 
 namespace __cxxabiv1
 {
@@ -115,7 +109,7 @@ public:
     if (Size == 0)
       return *this;
     grow(Size);
-    memmove(Buffer + CurrentPosition, R.begin(), Size);
+    std::memmove(Buffer + CurrentPosition, R.begin(), Size);
     CurrentPosition += Size;
     return *this;
   }
@@ -149,7 +143,7 @@ public:
     if (Sz == 0)
       return *this;
     grow(Sz);
-    memmove(Buffer + CurrentPosition, Buffer + s.First, Sz);
+    std::memmove(Buffer + CurrentPosition, Buffer + s.First, Sz);
     CurrentPosition += Sz;
     return *this;
   }
@@ -1412,19 +1406,19 @@ public:
       const char *t = first;
       char *e = buf;
       for (; t != last; ++t, ++e) {
-        unsigned d1 = isdigit(*t) ? static_cast<unsigned>(*t - '0')
+        unsigned d1 = std::isdigit(*t) ? static_cast<unsigned>(*t - '0')
                                   : static_cast<unsigned>(*t - 'a' + 10);
         ++t;
-        unsigned d0 = isdigit(*t) ? static_cast<unsigned>(*t - '0')
+        unsigned d0 = std::isdigit(*t) ? static_cast<unsigned>(*t - '0')
                                   : static_cast<unsigned>(*t - 'a' + 10);
         *e = static_cast<char>((d1 << 4) + d0);
       }
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       std::reverse(buf, e);
 #endif
-      char num[FloatData<Float>::max_demangled_size] = {0};
-      int n = snprintf(num, sizeof(num), FloatData<Float>::spec, value);
-      s += StringView(num, num + n);
+      std::ios state(s);
+      s << std::hexfloat << std::showbase << value;
+      s.copyfmt(state);
     }
   }
 };
@@ -1805,7 +1799,7 @@ parse_floating_number(const char* first, const char* last, Db& db)
     const char* t = first;
     for (; t != last; ++t)
     {
-        if (!isxdigit(*t))
+        if (!std::isxdigit(*t))
             return first;
     }
     if (*t == 'E')
@@ -1824,11 +1818,11 @@ parse_positive_integer(const char* first, const char* last, std::size_t* out)
     if (first != last)
     {
         char c = *first;
-        if (isdigit(c) && first+1 != last)
+        if (std::isdigit(c) && first+1 != last)
         {
             const char* t = first+1;
             std::size_t n = static_cast<std::size_t>(c - '0');
-            for (c = *t; isdigit(c); c = *t)
+            for (c = *t; std::isdigit(c); c = *t)
             {
                 n = n * 10 + static_cast<std::size_t>(c - '0');
                 if (++t == last)
@@ -2208,11 +2202,11 @@ parse_template_param(const char* first, const char* last, Db& db)
                     db.FixForwardReferences = true;
                 }
             }
-            else if (isdigit(first[1]))
+            else if (std::isdigit(first[1]))
             {
                 const char* t = first+1;
                 std::size_t sub = static_cast<std::size_t>(*t - '0');
-                for (++t; t != last && isdigit(*t); ++t)
+                for (++t; t != last && std::isdigit(*t); ++t)
                 {
                     sub *= 10;
                     sub += static_cast<std::size_t>(*t - '0');
@@ -4307,7 +4301,7 @@ parse_expr_primary(const char* first, const char* last, Db& db)
                     if (*t != 'E')
                     {
                         const char* n = t;
-                        for (; n != last && isdigit(*n); ++n)
+                        for (; n != last && std::isdigit(*n); ++n)
                             ;
                         if (n != t && n != last && *n == 'E')
                         {
@@ -6081,7 +6075,7 @@ parse_block_invoke(const char* first, const char* last, Db& db)
                 ++t;
             }
             // parse zero or more digits
-            while (t != last && isdigit(*t))
+            while (t != last && std::isdigit(*t))
                 ++t;
         }
         if (db.Names.empty())
