@@ -15,7 +15,7 @@ namespace utility
 {
 
 void
-print_abort_message(vector<string> &v)
+print_abort_message(std::vector<std::string> &v)
 {
 	for (const auto &i : v)
 		std::cerr << i;

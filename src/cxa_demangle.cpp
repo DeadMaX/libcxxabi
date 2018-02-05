@@ -24,7 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
-#include <ios>
+#include <sstream>
 
 namespace __cxxabiv1
 {
@@ -1416,9 +1416,10 @@ public:
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       std::reverse(buf, e);
 #endif
-      std::ios state(s);
-      s << std::hexfloat << std::showbase << value;
-      s.copyfmt(state);
+      std::stringstream ss;
+      ss << std::hexfloat << std::showbase << value;
+      std::string text = ss.str();
+      s += StringView(text.data(), text.data() + text.length());
     }
   }
 };

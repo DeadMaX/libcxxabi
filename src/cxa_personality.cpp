@@ -142,11 +142,11 @@ namespace
 {
 
 template <class AsType>
-uintptr_t readPointerHelper(const uint8_t*& p) {
+std::uintptr_t readPointerHelper(const std::uint8_t*& p) {
     AsType value;
-    memcpy(&value, p, sizeof(AsType));
+    _LIBCPP_CNAMESPACE::memcpy(&value, p, sizeof(AsType));
     p += sizeof(AsType);
-    return static_cast<uintptr_t>(value);
+    return static_cast<std::uintptr_t>(value);
 }
 
 } // end namespace
@@ -185,17 +185,17 @@ enum
 /// @param data reference variable holding memory pointer to decode from
 /// @returns decoded value
 static
-uintptr_t
-readULEB128(const uint8_t** data)
+std::uintptr_t
+readULEB128(const std::uint8_t** data)
 {
-    uintptr_t result = 0;
-    uintptr_t shift = 0;
+    std::uintptr_t result = 0;
+    std::uintptr_t shift = 0;
     unsigned char byte;
-    const uint8_t *p = *data;
+    const std::uint8_t *p = *data;
     do
     {
         byte = *p++;
-        result |= static_cast<uintptr_t>(byte & 0x7F) << shift;
+        result |= static_cast<std::uintptr_t>(byte & 0x7F) << shift;
         shift += 7;
     } while (byte & 0x80);
     *data = p;
@@ -208,23 +208,23 @@ readULEB128(const uint8_t** data)
 /// @param data reference variable holding memory pointer to decode from
 /// @returns decoded value
 static
-intptr_t
-readSLEB128(const uint8_t** data)
+std::intptr_t
+readSLEB128(const std::uint8_t** data)
 {
-    uintptr_t result = 0;
-    uintptr_t shift = 0;
+    std::uintptr_t result = 0;
+    std::uintptr_t shift = 0;
     unsigned char byte;
-    const uint8_t *p = *data;
+    const std::uint8_t *p = *data;
     do
     {
         byte = *p++;
-        result |= static_cast<uintptr_t>(byte & 0x7F) << shift;
+        result |= static_cast<std::uintptr_t>(byte & 0x7F) << shift;
         shift += 7;
     } while (byte & 0x80);
     *data = p;
     if ((byte & 0x40) && (shift < (sizeof(result) << 3)))
-        result |= static_cast<uintptr_t>(~0) << shift;
-    return static_cast<intptr_t>(result);
+        result |= static_cast<std::uintptr_t>(~0) << shift;
+    return static_cast<std::intptr_t>(result);
 }
 
 /// Read a pointer encoded value and advance pointer 
@@ -234,46 +234,46 @@ readSLEB128(const uint8_t** data)
 /// @param encoding dwarf encoding type
 /// @returns decoded value
 static
-uintptr_t
-readEncodedPointer(const uint8_t** data, uint8_t encoding)
+std::uintptr_t
+readEncodedPointer(const std::uint8_t** data, std::uint8_t encoding)
 {
-    uintptr_t result = 0;
+    std::uintptr_t result = 0;
     if (encoding == DW_EH_PE_omit) 
         return result;
-    const uint8_t* p = *data;
+    const std::uint8_t* p = *data;
     // first get value 
     switch (encoding & 0x0F)
     {
     case DW_EH_PE_absptr:
-        result = readPointerHelper<uintptr_t>(p);
+        result = readPointerHelper<std::uintptr_t>(p);
         break;
     case DW_EH_PE_uleb128:
         result = readULEB128(&p);
         break;
     case DW_EH_PE_sleb128:
-        result = static_cast<uintptr_t>(readSLEB128(&p));
+        result = static_cast<std::uintptr_t>(readSLEB128(&p));
         break;
     case DW_EH_PE_udata2:
-        result = readPointerHelper<uint16_t>(p);
+        result = readPointerHelper<std::uint16_t>(p);
         break;
     case DW_EH_PE_udata4:
-        result = readPointerHelper<uint32_t>(p);
+        result = readPointerHelper<std::uint32_t>(p);
         break;
     case DW_EH_PE_udata8:
         result = readPointerHelper<std::uint64_t>(p);
         break;
     case DW_EH_PE_sdata2:
-        result = readPointerHelper<int16_t>(p);
+        result = readPointerHelper<std::int16_t>(p);
         break;
     case DW_EH_PE_sdata4:
-        result = readPointerHelper<int32_t>(p);
+        result = readPointerHelper<std::int32_t>(p);
         break;
     case DW_EH_PE_sdata8:
-        result = readPointerHelper<int64_t>(p);
+        result = readPointerHelper<std::int64_t>(p);
         break;
     default:
         // not supported 
-        abort();
+        std::abort();
         break;
     }
     // then add relative offset 
@@ -284,7 +284,7 @@ readEncodedPointer(const uint8_t** data, uint8_t encoding)
         break;
     case DW_EH_PE_pcrel:
         if (result)
-            result += (uintptr_t)(*data);
+            result += (std::uintptr_t)(*data);
         break;
     case DW_EH_PE_textrel:
     case DW_EH_PE_datarel:
@@ -292,12 +292,12 @@ readEncodedPointer(const uint8_t** data, uint8_t encoding)
     case DW_EH_PE_aligned:
     default:
         // not supported 
-        abort();
+        std::abort();
         break;
     }
     // then apply indirection 
     if (result && (encoding & DW_EH_PE_indirect))
-        result = *((uintptr_t*)result);
+        result = *((std::uintptr_t*)result);
     *data = p;
     return result;
 }
@@ -319,7 +319,7 @@ call_terminate(bool native_exception, _Unwind_Exception* unwind_exception)
 #if defined(_LIBCXXABI_ARM_EHABI)
 static const void* read_target2_value(const void* ptr)
 {
-    uintptr_t offset = *reinterpret_cast<const uintptr_t*>(ptr);
+    std::uintptr_t offset = *reinterpret_cast<const std::uintptr_t*>(ptr);
     if (!offset)
         return 0;
     // "ARM EABI provides a TARGET2 relocation to describe these typeinfo
@@ -328,17 +328,17 @@ static const void* read_target2_value(const void* ptr)
     // relocations. For linux they turn into GOT-REL relocations."
     // https://gcc.gnu.org/ml/gcc-patches/2009-08/msg00264.html
 #if defined(LIBCXXABI_BAREMETAL)
-    return reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(ptr) +
+    return reinterpret_cast<const void*>(reinterpret_cast<std::uintptr_t>(ptr) +
                                          offset);
 #else
-    return *reinterpret_cast<const void **>(reinterpret_cast<uintptr_t>(ptr) +
+    return *reinterpret_cast<const void **>(reinterpret_cast<std::uintptr_t>(ptr) +
                                             offset);
 #endif
 }
 
 static const __shim_type_info*
-get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
-                   uint8_t ttypeEncoding, bool native_exception,
+get_shim_type_info(std::uint64_t ttypeIndex, const std::uint8_t* classInfo,
+                   std::uint8_t ttypeEncoding, bool native_exception,
                    _Unwind_Exception* unwind_exception)
 {
     if (classInfo == 0)
@@ -353,15 +353,15 @@ get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
            "Unexpected TTypeEncoding");
     (void)ttypeEncoding;
 
-    const uint8_t* ttypePtr = classInfo - ttypeIndex * sizeof(uintptr_t);
+    const std::uint8_t* ttypePtr = classInfo - ttypeIndex * sizeof(std::uintptr_t);
     return reinterpret_cast<const __shim_type_info *>(
         read_target2_value(ttypePtr));
 }
 #else // !defined(_LIBCXXABI_ARM_EHABI)
 static
 const __shim_type_info*
-get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
-                   uint8_t ttypeEncoding, bool native_exception,
+get_shim_type_info(std::uint64_t ttypeIndex, const std::uint8_t* classInfo,
+                   std::uint8_t ttypeEncoding, bool native_exception,
                    _Unwind_Exception* unwind_exception)
 {
     if (classInfo == 0)
@@ -407,8 +407,8 @@ get_shim_type_info(std::uint64_t ttypeIndex, const uint8_t* classInfo,
 #if defined(_LIBCXXABI_ARM_EHABI)
 static
 bool
-exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
-                         uint8_t ttypeEncoding, const __shim_type_info* excpType,
+exception_spec_can_catch(int64_t specIndex, const std::uint8_t* classInfo,
+                         std::uint8_t ttypeEncoding, const __shim_type_info* excpType,
                          void* adjustedPtr, _Unwind_Exception* unwind_exception)
 {
     if (classInfo == 0)
@@ -427,8 +427,8 @@ exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
     specIndex = -specIndex;
     --specIndex;
     const void** temp = reinterpret_cast<const void**>(
-        reinterpret_cast<uintptr_t>(classInfo) +
-        static_cast<uintptr_t>(specIndex) * sizeof(uintptr_t));
+        reinterpret_cast<std::uintptr_t>(classInfo) +
+        static_cast<std::uintptr_t>(specIndex) * sizeof(std::uintptr_t));
     // If any type in the spec list can catch excpType, return false, else return true
     //    adjustments to adjustedPtr are ignored.
     while (true)
@@ -452,8 +452,8 @@ exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
 #else
 static
 bool
-exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
-                         uint8_t ttypeEncoding, const __shim_type_info* excpType,
+exception_spec_can_catch(std::int64_t specIndex, const std::uint8_t* classInfo,
+                         std::uint8_t ttypeEncoding, const __shim_type_info* excpType,
                          void* adjustedPtr, _Unwind_Exception* unwind_exception)
 {
     if (classInfo == 0)
@@ -464,7 +464,7 @@ exception_spec_can_catch(int64_t specIndex, const uint8_t* classInfo,
     // specIndex is negative of 1-based byte offset into classInfo;
     specIndex = -specIndex;
     --specIndex;
-    const uint8_t* temp = classInfo + specIndex;
+    const std::uint8_t* temp = classInfo + specIndex;
     // If any type in the spec list can catch excpType, return false, else return true
     //    adjustments to adjustedPtr are ignored.
     while (true)
@@ -502,10 +502,10 @@ namespace
 
 struct scan_results
 {
-    int64_t        ttypeIndex;   // > 0 catch handler, < 0 exception spec handler, == 0 a cleanup
-    const uint8_t* actionRecord;         // Currently unused.  Retained to ease future maintenance.
-    const uint8_t* languageSpecificData;  // Needed only for __cxa_call_unexpected
-    uintptr_t      landingPad;   // null -> nothing found, else something found
+    std::int64_t        ttypeIndex;   // > 0 catch handler, < 0 exception spec handler, == 0 a cleanup
+    const std::uint8_t* actionRecord;         // Currently unused.  Retained to ease future maintenance.
+    const std::uint8_t* languageSpecificData;  // Needed only for __cxa_call_unexpected
+    std::uintptr_t      landingPad;   // null -> nothing found, else something found
     void*          adjustedPtr;  // Used in cxa_exception.cpp
     _Unwind_Reason_Code reason;  // One of _URC_FATAL_PHASE1_ERROR,
                                  //        _URC_FATAL_PHASE2_ERROR,
@@ -524,9 +524,9 @@ set_registers(_Unwind_Exception* unwind_exception, _Unwind_Context* context,
 #define __builtin_eh_return_data_regno(regno) regno
 #endif
   _Unwind_SetGR(context, __builtin_eh_return_data_regno(0),
-                reinterpret_cast<uintptr_t>(unwind_exception));
+                reinterpret_cast<std::uintptr_t>(unwind_exception));
   _Unwind_SetGR(context, __builtin_eh_return_data_regno(1),
-                static_cast<uintptr_t>(results.ttypeIndex));
+                static_cast<std::uintptr_t>(results.ttypeIndex));
   _Unwind_SetIP(context, results.landingPad);
 }
 
@@ -593,7 +593,7 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
         return;
     }
     // Start scan by getting exception table address
-    const uint8_t *lsda = (const uint8_t *)_Unwind_GetLanguageSpecificData(context);
+    const std::uint8_t *lsda = (const std::uint8_t *)_Unwind_GetLanguageSpecificData(context);
     if (lsda == 0)
     {
         // There is no exception table
@@ -603,12 +603,12 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
     results.languageSpecificData = lsda;
     // Get the current instruction pointer and offset it before next
     // instruction in the current frame which threw the exception.
-    uintptr_t ip = _Unwind_GetIP(context) - 1;
+    std::uintptr_t ip = _Unwind_GetIP(context) - 1;
     // Get beginning current frame's code (as defined by the 
     // emitted dwarf code)
-    uintptr_t funcStart = _Unwind_GetRegionStart(context);
+    std::uintptr_t funcStart = _Unwind_GetRegionStart(context);
 #ifdef __USING_SJLJ_EXCEPTIONS__
-    if (ip == uintptr_t(-1))
+    if (ip == std::uintptr_t(-1))
     {
         // no action
         results.reason = _URC_CONTINUE_UNWIND;
@@ -618,51 +618,51 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
         call_terminate(native_exception, unwind_exception);
     // ip is 1-based index into call site table
 #else  // !__USING_SJLJ_EXCEPTIONS__
-    uintptr_t ipOffset = ip - funcStart;
+    std::uintptr_t ipOffset = ip - funcStart;
 #endif  // !defined(_USING_SLJL_EXCEPTIONS__)
-    const uint8_t* classInfo = NULL;
+    const std::uint8_t* classInfo = nullptr;
     // Note: See JITDwarfEmitter::EmitExceptionTable(...) for corresponding
     //       dwarf emission
     // Parse LSDA header.
-    uint8_t lpStartEncoding = *lsda++;
-    const uint8_t* lpStart = (const uint8_t*)readEncodedPointer(&lsda, lpStartEncoding);
+    std::uint8_t lpStartEncoding = *lsda++;
+    const std::uint8_t* lpStart = (const std::uint8_t*)readEncodedPointer(&lsda, lpStartEncoding);
     if (lpStart == 0)
-        lpStart = (const uint8_t*)funcStart;
-    uint8_t ttypeEncoding = *lsda++;
+        lpStart = (const std::uint8_t*)funcStart;
+    std::uint8_t ttypeEncoding = *lsda++;
     if (ttypeEncoding != DW_EH_PE_omit)
     {
         // Calculate type info locations in emitted dwarf code which
         // were flagged by type info arguments to llvm.eh.selector
         // intrinsic
-        uintptr_t classInfoOffset = readULEB128(&lsda);
+        std::uintptr_t classInfoOffset = readULEB128(&lsda);
         classInfo = lsda + classInfoOffset;
     }
     // Walk call-site table looking for range that 
     // includes current PC. 
-    uint8_t callSiteEncoding = *lsda++;
+    std::uint8_t callSiteEncoding = *lsda++;
 #ifdef __USING_SJLJ_EXCEPTIONS__
     (void)callSiteEncoding;  // When using SjLj exceptions, callSiteEncoding is never used
 #endif
-    uint32_t callSiteTableLength = static_cast<uint32_t>(readULEB128(&lsda));
-    const uint8_t* callSiteTableStart = lsda;
-    const uint8_t* callSiteTableEnd = callSiteTableStart + callSiteTableLength;
-    const uint8_t* actionTableStart = callSiteTableEnd;
-    const uint8_t* callSitePtr = callSiteTableStart;
+    std::uint32_t callSiteTableLength = static_cast<std::uint32_t>(readULEB128(&lsda));
+    const std::uint8_t* callSiteTableStart = lsda;
+    const std::uint8_t* callSiteTableEnd = callSiteTableStart + callSiteTableLength;
+    const std::uint8_t* actionTableStart = callSiteTableEnd;
+    const std::uint8_t* callSitePtr = callSiteTableStart;
     while (callSitePtr < callSiteTableEnd)
     {
         // There is one entry per call site.
 #ifndef __USING_SJLJ_EXCEPTIONS__
         // The call sites are non-overlapping in [start, start+length)
         // The call sites are ordered in increasing value of start
-        uintptr_t start = readEncodedPointer(&callSitePtr, callSiteEncoding);
-        uintptr_t length = readEncodedPointer(&callSitePtr, callSiteEncoding);
-        uintptr_t landingPad = readEncodedPointer(&callSitePtr, callSiteEncoding);
-        uintptr_t actionEntry = readULEB128(&callSitePtr);
+        std::uintptr_t start = readEncodedPointer(&callSitePtr, callSiteEncoding);
+        std::uintptr_t length = readEncodedPointer(&callSitePtr, callSiteEncoding);
+        std::uintptr_t landingPad = readEncodedPointer(&callSitePtr, callSiteEncoding);
+        std::uintptr_t actionEntry = readULEB128(&callSitePtr);
         if ((start <= ipOffset) && (ipOffset < (start + length)))
 #else  // __USING_SJLJ_EXCEPTIONS__
         // ip is 1-based index into this table
-        uintptr_t landingPad = readULEB128(&callSitePtr);
-        uintptr_t actionEntry = readULEB128(&callSitePtr);
+        std::uintptr_t landingPad = readULEB128(&callSitePtr);
+        std::uintptr_t actionEntry = readULEB128(&callSitePtr);
         if (--ip == 0)
 #endif  // __USING_SJLJ_EXCEPTIONS__
         {
@@ -674,7 +674,7 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
                 results.reason = _URC_CONTINUE_UNWIND;
                 return;
             }
-            landingPad = (uintptr_t)lpStart + landingPad;
+            landingPad = (std::uintptr_t)lpStart + landingPad;
 #else  // __USING_SJLJ_EXCEPTIONS__
             ++landingPad;
 #endif  // __USING_SJLJ_EXCEPTIONS__
@@ -695,12 +695,12 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
                 return;
             }
             // Convert 1-based byte offset into
-            const uint8_t* action = actionTableStart + (actionEntry - 1);
+            const std::uint8_t* action = actionTableStart + (actionEntry - 1);
             // Scan action entries until you find a matching handler, cleanup, or the end of action list
             while (true)
             {
-                const uint8_t* actionRecord = action;
-                int64_t ttypeIndex = readSLEB128(&action);
+                const std::uint8_t* actionRecord = action;
+                std::int64_t ttypeIndex = readSLEB128(&action);
                 if (ttypeIndex > 0)
                 {
                     // Found a catch, does it actually catch?
@@ -857,8 +857,8 @@ static void scan_eh_tab(scan_results &results, _Unwind_Action actions,
                         return;
                     }
                 }
-                const uint8_t* temp = action;
-                int64_t actionOffset = readSLEB128(&temp);
+                const std::uint8_t* temp = action;
+                std::int64_t actionOffset = readSLEB128(&temp);
                 if (actionOffset == 0)
                 {
                     // End of action list, no matching handler or cleanup found
@@ -988,7 +988,7 @@ __gxx_personality_v0
                 results.ttypeIndex = exception_header->handlerSwitchValue;
                 results.actionRecord = exception_header->actionRecord;
                 results.languageSpecificData = exception_header->languageSpecificData;
-                results.landingPad = reinterpret_cast<uintptr_t>(exception_header->catchTemp);
+                results.landingPad = reinterpret_cast<std::uintptr_t>(exception_header->catchTemp);
                 results.adjustedPtr = exception_header->adjustedPtr;
             }
             else
@@ -1059,9 +1059,9 @@ static void load_results_from_barrier_cache(scan_results& results,
                                             const _Unwind_Exception* unwind_exception)
 {
     results.adjustedPtr = (void*)unwind_exception->barrier_cache.bitpattern[0];
-    results.actionRecord = (const uint8_t*)unwind_exception->barrier_cache.bitpattern[1];
-    results.languageSpecificData = (const uint8_t*)unwind_exception->barrier_cache.bitpattern[2];
-    results.landingPad = (uintptr_t)unwind_exception->barrier_cache.bitpattern[3];
+    results.actionRecord = (const std::uint8_t*)unwind_exception->barrier_cache.bitpattern[1];
+    results.languageSpecificData = (const std::uint8_t*)unwind_exception->barrier_cache.bitpattern[2];
+    results.landingPad = (std::uintptr_t)unwind_exception->barrier_cache.bitpattern[3];
     results.ttypeIndex = (int64_t)(int32_t)unwind_exception->barrier_cache.bitpattern[4];
 }
 
@@ -1080,7 +1080,7 @@ __gxx_personality_v0(_Unwind_State state,
     // Copy the address of _Unwind_Control_Block to r12 so that
     // _Unwind_GetLanguageSpecificData() and _Unwind_GetRegionStart() can
     // return correct address.
-    _Unwind_SetGR(context, REG_UCB, reinterpret_cast<uint32_t>(unwind_exception));
+    _Unwind_SetGR(context, REG_UCB, reinterpret_cast<std::uint32_t>(unwind_exception));
 #endif
 
     // Check the undocumented force unwinding behavior
@@ -1184,8 +1184,8 @@ __cxa_call_unexpected(void* arg)
     std::unexpected_handler u_handler;
     std::terminate_handler t_handler;
     __cxa_exception* old_exception_header = 0;
-    int64_t ttypeIndex;
-    const uint8_t* lsda;
+    std::int64_t ttypeIndex;
+    const std::uint8_t* lsda;
     if (native_old_exception)
     {
         old_exception_header = (__cxa_exception*)(unwind_exception+1) - 1;
@@ -1195,7 +1195,7 @@ __cxa_call_unexpected(void* arg)
         //   these values get overwritten by the rethrow.  So save them now:
 #if defined(_LIBCXXABI_ARM_EHABI)
         ttypeIndex = (int64_t)(int32_t)unwind_exception->barrier_cache.bitpattern[4];
-        lsda = (const uint8_t*)unwind_exception->barrier_cache.bitpattern[2];
+        lsda = (const std::uint8_t*)unwind_exception->barrier_cache.bitpattern[2];
 #else
         ttypeIndex = old_exception_header->handlerSwitchValue;
         lsda = old_exception_header->languageSpecificData;
@@ -1223,16 +1223,16 @@ __cxa_call_unexpected(void* arg)
             //   old_exception_header->languageSpecificData
             //   old_exception_header->actionRecord
             // Need
-            //   const uint8_t* classInfo
-            //   uint8_t ttypeEncoding
-            uint8_t lpStartEncoding = *lsda++;
-            const uint8_t* lpStart = (const uint8_t*)readEncodedPointer(&lsda, lpStartEncoding);
+            //   const std::uint8_t* classInfo
+            //   std::uint8_t ttypeEncoding
+            std::uint8_t lpStartEncoding = *lsda++;
+            const std::uint8_t* lpStart = (const std::uint8_t*)readEncodedPointer(&lsda, lpStartEncoding);
             (void)lpStart;  // purposefully unused.  Just needed to increment lsda.
-            uint8_t ttypeEncoding = *lsda++;
+            std::uint8_t ttypeEncoding = *lsda++;
             if (ttypeEncoding == DW_EH_PE_omit)
                 std::__terminate(t_handler);
-            uintptr_t classInfoOffset = readULEB128(&lsda);
-            const uint8_t* classInfo = lsda + classInfoOffset;
+            std::uintptr_t classInfoOffset = readULEB128(&lsda);
+            const std::uint8_t* classInfo = lsda + classInfoOffset;
             // Is this new exception catchable by the exception spec at ttypeIndex?
             // The answer is obviously yes if the new and old exceptions are the same exception
             // If no

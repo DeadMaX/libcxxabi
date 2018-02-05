@@ -149,7 +149,7 @@ operator new(std::size_t size, std::align_val_t alignment) _THROW_BAD_ALLOC
 #if defined(_LIBCPP_WIN32API)
     while ((p = _aligned_malloc(size, static_cast<std::size_t>(alignment))) == nullptr)
 #else
-    while (::posix_memalign(&p, static_cast<std::size_t>(alignment), size) != 0)
+    while (_LIBCPP_CNAMESPACE::posix_memalign(&p, static_cast<std::size_t>(alignment), size) != 0)
 #endif
     {
         // If posix_memalign fails and there is a new_handler,
@@ -220,9 +220,9 @@ operator delete(void* ptr, std::align_val_t) _NOEXCEPT
 {
     if (ptr)
 #if defined(_LIBCPP_WIN32API)
-        ::_aligned_free(ptr);
+        _LIBCPP_CNAMESPACE::_aligned_free(ptr);
 #else
-        ::free(ptr);
+        _LIBCPP_CNAMESPACE::free(ptr);
 #endif
 }
 

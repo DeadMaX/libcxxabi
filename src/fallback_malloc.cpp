@@ -66,7 +66,7 @@ struct heap_node {
 
 static const heap_node* list_end =
     (heap_node*)(&heap[HEAP_SIZE]); // one past the end of the heap
-static heap_node* freelist = NULL;
+static heap_node* freelist = nullptr;
 
 heap_node* node_from_offset(const heap_offset offset) {
   return (heap_node*)(heap + (offset * sizeof(heap_node)));
@@ -85,7 +85,7 @@ void init_heap() {
 }
 
 //  How big a chunk we allocate
-size_t alloc_size(std::size_t len) {
+std::size_t alloc_size(std::size_t len) {
   return (len + sizeof(heap_node) - 1) / sizeof(heap_node) + 1;
 }
 
@@ -98,7 +98,7 @@ void* fallback_malloc(std::size_t len) {
   const std::size_t nelems = alloc_size(len);
   mutexor mtx(&heap_mutex);
 
-  if (NULL == freelist)
+  if (nullptr == freelist)
     init_heap();
 
   //  Walk the free list, looking for a "big enough" chunk
@@ -124,7 +124,7 @@ void* fallback_malloc(std::size_t len) {
       return (void*)(p + 1);
     }
   }
-  return NULL; // couldn't find a spot big enough
+  return nullptr; // couldn't find a spot big enough
 }
 
 //  Return the start of the next block
@@ -183,7 +183,7 @@ void fallback_free(void* ptr) {
 size_t print_free_list() {
   struct heap_node *p, *prev;
   heap_size total_free = 0;
-  if (NULL == freelist)
+  if (nullptr == freelist)
     init_heap();
 
   for (p = freelist, prev = 0; p && p != list_end;
@@ -213,7 +213,7 @@ void* __aligned_malloc_with_fallback(std::size_t size) {
   if (size == 0)
     size = 1;
   void* dest;
-  if (::posix_memalign(&dest, alignof(__aligned_type), size) == 0)
+  if (_LIBCPP_CNAMESPACE::posix_memalign(&dest, alignof(__aligned_type), size) == 0)
     return dest;
 #endif
   return fallback_malloc(size);
@@ -221,11 +221,11 @@ void* __aligned_malloc_with_fallback(std::size_t size) {
 
 void* __calloc_with_fallback(std::size_t count, std::size_t size) {
   void* ptr = std::calloc(count, size);
-  if (NULL != ptr)
+  if (nullptr != ptr)
     return ptr;
   // if calloc fails, fall back to emergency stash
   ptr = fallback_malloc(size * count);
-  if (NULL != ptr)
+  if (nullptr != ptr)
     std::memset(ptr, 0, size * count);
   return ptr;
 }
@@ -235,7 +235,7 @@ void __aligned_free_with_fallback(void* ptr) {
     fallback_free(ptr);
   else {
 #if defined(_WIN32)
-    ::_aligned_free(ptr);
+    _LIBCPP_CNAMESPACE::_aligned_free(ptr);
 #else
     std::free(ptr);
 #endif

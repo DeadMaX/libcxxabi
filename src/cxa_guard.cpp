@@ -120,7 +120,7 @@ inline lock_type get_lock(std::uint64_t x)
     union
     {
         std::uint64_t guard;
-        uint8_t lock[2];
+        std::uint8_t lock[2];
     } f = {x};
     return f.lock[1] != 0;
 }
@@ -130,7 +130,7 @@ inline void set_lock(std::uint64_t& x, lock_type y)
     union
     {
         std::uint64_t guard;
-        uint8_t lock[2];
+        std::uint8_t lock[2];
     } f = {0};
     f.lock[1] = y;
     x = f.guard;

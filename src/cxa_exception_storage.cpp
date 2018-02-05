@@ -58,7 +58,7 @@ namespace {
 
     void _LIBCPP_TLS_DESTRUCTOR_CC destruct_ (void *p) {
         __free_with_fallback ( p );
-        if ( 0 != std::__libcpp_tls_set ( key_, NULL ) )
+        if ( 0 != std::__libcpp_tls_set ( key_, nullptr ) )
             abort_message("cannot zero out thread value for __cxa_get_globals()");
         }
 
@@ -74,10 +74,10 @@ extern "C" {
         __cxa_eh_globals* retVal = __cxa_get_globals_fast ();
     
     //  If this is the first time we've been asked for these globals, create them
-        if ( NULL == retVal ) {
+        if ( nullptr == retVal ) {
             retVal = static_cast<__cxa_eh_globals*>
                         (__calloc_with_fallback (1, sizeof (__cxa_eh_globals)));
-            if ( NULL == retVal )
+            if ( nullptr == retVal )
                 abort_message("cannot allocate __cxa_eh_globals");
             if ( 0 != std::__libcpp_tls_set ( key_, retVal ) )
                abort_message("std::__libcpp_tls_set failure in __cxa_get_globals()");

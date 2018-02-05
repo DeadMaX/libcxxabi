@@ -68,12 +68,12 @@ cxa_exception_from_exception_unwind_exception(_Unwind_Exception* unwind_exceptio
 
 // Round s up to next multiple of a.
 static inline
-size_t aligned_allocation_size(std::size_t s, std::size_t a) {
+std::size_t aligned_allocation_size(std::size_t s, std::size_t a) {
     return (s + a - 1) & ~(a - 1);
 }
 
 static inline
-size_t cxa_exception_size_from_exception_thrown_size(std::size_t size) {
+std::size_t cxa_exception_size_from_exception_thrown_size(std::size_t size) {
     return aligned_allocation_size(size + sizeof (__cxa_exception),
                                    alignof(__cxa_exception));
 }
@@ -174,7 +174,7 @@ void *__cxa_allocate_exception(std::size_t thrown_size) throw() {
     std::size_t header_offset = get_cxa_exception_offset();
     char *raw_buffer =
         (char *)__aligned_malloc_with_fallback(header_offset + actual_size);
-    if (NULL == raw_buffer)
+    if (nullptr == raw_buffer)
         std::terminate();
     __cxa_exception *exception_header =
         static_cast<__cxa_exception *>((void *)(raw_buffer + header_offset));
@@ -199,7 +199,7 @@ void __cxa_free_exception(void *thrown_object) throw() {
 void * __cxa_allocate_dependent_exception () {
     std::size_t actual_size = sizeof(__cxa_dependent_exception);
     void *ptr = __aligned_malloc_with_fallback(actual_size);
-    if (NULL == ptr)
+    if (nullptr == ptr)
         std::terminate();
     std::memset(ptr, 0, actual_size);
     return ptr;
@@ -312,7 +312,7 @@ bool __cxa_begin_cleanup(void *unwind_arg) throw() {
     {
         // If the propagatingExceptions stack is not empty, since we can't
         // chain the foreign exception, terminate it.
-        if (NULL != globals->propagatingExceptions)
+        if (nullptr != globals->propagatingExceptions)
             std::terminate();
         globals->propagatingExceptions = exception_header;
     }
@@ -335,7 +335,7 @@ __cxa_end_cleanup_impl()
 {
     __cxa_eh_globals* globals = __cxa_get_globals();
     __cxa_exception* exception_header = globals->propagatingExceptions;
-    if (NULL == exception_header)
+    if (nullptr == exception_header)
     {
         // It seems that __cxa_begin_cleanup() is not called properly.
         // We have no choice but terminate the program now.
@@ -348,12 +348,12 @@ __cxa_end_cleanup_impl()
         if (0 == exception_header->propagationCount)
         {
             globals->propagatingExceptions = exception_header->nextPropagatingException;
-            exception_header->nextPropagatingException = NULL;
+            exception_header->nextPropagatingException = nullptr;
         }
     }
     else
     {
-        globals->propagatingExceptions = NULL;
+        globals->propagatingExceptions = nullptr;
     }
     return &exception_header->unwindHeader;
 }
@@ -482,7 +482,7 @@ void __cxa_end_catch() {
     // If we've rethrown a foreign exception, then globals->caughtExceptions
     //    will have been made an empty stack by __cxa_rethrow() and there is
     //    nothing more to be done.  Do nothing!
-    if (NULL != exception_header)
+    if (nullptr != exception_header)
     {
         bool native_exception = isOurExceptionClass(&exception_header->unwindHeader);
         if (native_exception)
@@ -544,13 +544,13 @@ void __cxa_end_catch() {
 std::type_info *__cxa_current_exception_type() {
 //  get the current exception
     __cxa_eh_globals *globals = __cxa_get_globals_fast();
-    if (NULL == globals)
-        return NULL;     //  If there have never been any exceptions, there are none now.
+    if (nullptr == globals)
+        return nullptr;     //  If there have never been any exceptions, there are none now.
     __cxa_exception *exception_header = globals->caughtExceptions;
-    if (NULL == exception_header)
-        return NULL;        //  No current exception
+    if (nullptr == exception_header)
+        return nullptr;        //  No current exception
     if (!isOurExceptionClass(&exception_header->unwindHeader))
-        return NULL;
+        return nullptr;
     return exception_header->exceptionType;
 }
 
@@ -569,7 +569,7 @@ If the exception is native:
 void __cxa_rethrow() {
     __cxa_eh_globals* globals = __cxa_get_globals();
     __cxa_exception* exception_header = globals->caughtExceptions;
-    if (NULL == exception_header)
+    if (nullptr == exception_header)
         std::terminate();      // throw; called outside of a exception handler
     bool native_exception = isOurExceptionClass(&exception_header->unwindHeader);
     if (native_exception)
@@ -609,11 +609,11 @@ void __cxa_rethrow() {
     of the __cxa_exception header associated with the thrown object referred to
     by thrown_object.
 
-    Requires:  If thrown_object is not NULL, it is a native exception.
+    Requires:  If thrown_object is not nullptr, it is a native exception.
 */
 void
 __cxa_increment_exception_refcount(void *thrown_object) throw() {
-    if (thrown_object != NULL )
+    if (thrown_object != nullptr )
     {
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
         __sync_add_and_fetch(&exception_header->referenceCount, 1);
@@ -626,16 +626,16 @@ __cxa_increment_exception_refcount(void *thrown_object) throw() {
     by thrown_object.  If the referenceCount drops to zero, destroy and
     deallocate the exception.
 
-    Requires:  If thrown_object is not NULL, it is a native exception.
+    Requires:  If thrown_object is not nullptr, it is a native exception.
 */
 void
 __cxa_decrement_exception_refcount(void *thrown_object) throw() {
-    if (thrown_object != NULL )
+    if (thrown_object != nullptr )
     {
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
         if (__sync_sub_and_fetch(&exception_header->referenceCount, std::size_t(1)) == 0)
         {
-            if (NULL != exception_header->exceptionDestructor)
+            if (nullptr != exception_header->exceptionDestructor)
                 exception_header->exceptionDestructor(thrown_object);
             __cxa_free_exception(thrown_object);
         }
@@ -649,19 +649,19 @@ __cxa_decrement_exception_refcount(void *thrown_object) throw() {
     returns null.
 
     We can use __cxa_get_globals_fast here to get the globals because if there have
-    been no exceptions thrown, ever, on this thread, we can return NULL without 
+    been no exceptions thrown, ever, on this thread, we can return nullptr without 
     the need to allocate the exception-handling globals.
 */
 void *__cxa_current_primary_exception() throw() {
 //  get the current exception
     __cxa_eh_globals* globals = __cxa_get_globals_fast();
-    if (NULL == globals)
-        return NULL;        //  If there are no globals, there is no exception
+    if (nullptr == globals)
+        return nullptr;        //  If there are no globals, there is no exception
     __cxa_exception* exception_header = globals->caughtExceptions;
-    if (NULL == exception_header)
-        return NULL;        //  No current exception
+    if (nullptr == exception_header)
+        return nullptr;        //  No current exception
     if (!isOurExceptionClass(&exception_header->unwindHeader))
-        return NULL;        // Can't capture a foreign exception (no way to refcount it)
+        return nullptr;        // Can't capture a foreign exception (no way to refcount it)
     if (isDependentException(&exception_header->unwindHeader)) {
         __cxa_dependent_exception* dep_exception_header =
             reinterpret_cast<__cxa_dependent_exception*>(exception_header);
@@ -697,10 +697,10 @@ dependent_exception_cleanup(_Unwind_Reason_Code reason, _Unwind_Exception* unwin
 void
 __cxa_rethrow_primary_exception(void* thrown_object)
 {
-    if ( thrown_object != NULL )
+    if ( thrown_object != nullptr )
     {
         // thrown_object guaranteed to be native because
-        //   __cxa_current_primary_exception returns NULL for foreign exceptions
+        //   __cxa_current_primary_exception returns nullptr for foreign exceptions
         __cxa_exception* exception_header = cxa_exception_from_thrown_object(thrown_object);
         __cxa_dependent_exception* dep_exception_header =
             static_cast<__cxa_dependent_exception*>(__cxa_allocate_dependent_exception());

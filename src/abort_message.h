@@ -18,48 +18,41 @@
 
 namespace utility
 {
-	template<typename T, typename = enable_if<!is_same<T, char>::value>::type>
-	typename decltype(to_string(T{})) stringify(T && t)
+	template<typename T>
+	typename std::enable_if<std::is_same<T, char>::value, std::string>::type stringify(T && t)
 	{
-		return to_string(forward<T>(t));
+		return std::string(1, t);
 	}
 
 	template<typename T>
-	typename enable_if<is_same<T, char>::value, string>::type stringify(T && t)
+	typename std::enable_if<!std::is_arithmetic<T>::value, std::string>::type stringify(T && t)
 	{
-		return string(1, t);
+		return std::string(std::forward<T>(t));
 	}
 
-	template<typename T>
-	typename enable_if<!is_arithmetic<T>::value, string>::type stringify(T && t)
+	template<std::size_t i, typename T>
+	void convert(std::vector<std::string> &tab, T v)
 	{
-		return string(forward<T>(t));
+		tab[i] = stringify(std::forward<T>(v));
 	}
 
-	template<typename T, typename... Args>
-	void convert(vector<string> &tab, size_t i, T && v, Args... && args)
+	template<std::size_t i, typename T, typename... Args>
+	void convert(std::vector<std::string> &tab, T v, Args... args)
 	{
-		tab[i] = stringify(forward<T>(v));
-		convert(tab, i + 1, forward<Args>(args)...);
-	}
-
-	template<typename T,
-		typename = enable_if<is_convertible<T, string>::value>::type>
-		void convert(vector<string> &tab, size_t i, T && v)
-	{
-		tab[i] = stringify(forward<T>(v));
+		tab[i] = stringify(std::forward<T>(v));
+		convert<i + 1, Args...>(tab, std::forward<Args>(args)...);
 	}
 
 	_LIBCXXABI_HIDDEN _LIBCXXABI_NORETURN void
-		print_abort_message(vector<string> &v);
+		print_abort_message(std::vector<std::string> &v);
 }
 
 template<typename... Args>
 void abort_message(Args... args)
 {
-	vector<string> val(sizeof...(Args));
-	utility::convert(val, 0, forward<Args>(args)...);
-	print_abort_message(val);
+	std::vector<std::string> val(sizeof...(Args));
+	utility::convert<0, Args...>(val, std::forward<Args>(args)...);
+	utility::print_abort_message(val);
 }
 
 #endif

@@ -62,7 +62,7 @@ is_equal(const std::type_info* x, const std::type_info* y, bool use_strcmp)
 #ifndef _WIN32
     if (!use_strcmp)
         return x == y;
-    return strcmp(x->name(), y->name()) == 0;
+    return _LIBCPP_CNAMESPACE::strcmp(x->name(), y->name()) == 0;
 #else
     return (x == y) || (_LIBCPP_CNAMESPACE::strcmp(x->name(), y->name()) == 0);
 #endif
